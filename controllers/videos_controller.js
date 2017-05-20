@@ -14,8 +14,8 @@ module.exports.getMovie = async (req, res) => {
 };
 
 module.exports.getShow = async (req, res) => {
-    const show = await showsModel.get(req.params.id);
-    const path = show.show.path;
+    const episode = await showsModel.getEpisode(req.params.id, req.params.season, req.params.episode);
+    const path = episode.episode.path;
 
     module.exports.getVideo(req, res, path);
 };
