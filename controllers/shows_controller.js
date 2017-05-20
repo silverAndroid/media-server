@@ -23,3 +23,14 @@ module.exports.getSeasons = async (req, res) => {
         statusCode = 404;
     res.status(statusCode).json(seasons);
 };
+
+module.exports.getSeason = async (req, res) => {
+    const season = await showsModel.getSeason(req.params.id, req.params.season);
+
+    let statusCode = 200;
+    if (season.error)
+        statusCode = 500;
+    else if (season.season === undefined || season.season.length === 0)
+        statusCode = 404;
+    res.status(statusCode).json(season);
+};

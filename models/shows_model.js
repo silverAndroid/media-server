@@ -24,6 +24,16 @@ module.exports.getSeasons = async (showID) => {
     }
 };
 
+module.exports.getSeason = async (showID, seasonNumber) => {
+    try {
+        const season = await db.all('SELECT s.season, s.episode FROM shows s JOIN videos v ON v.id = s.video_id JOIN video_names vn ON vn.id = v.v_name_id WHERE vn.id = ? AND s.season = ?;', [showID, seasonNumber]);
+        return {error: false, season};
+    } catch (e) {
+        console.error(e);
+        return {error: true};
+    }
+};
+
 module.exports.add = async (name, path, season, episode) => {
     try {
         await db.run('INSERT INTO video_names (name) VALUES (?)', [name]);
