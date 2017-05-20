@@ -1,0 +1,22 @@
+{
+  "name": "moviestreamer",
+  "version": "0.0.0",
+  "private": true,
+  "scripts": {
+    "start": "node ./bin/www"
+  },
+  "dependencies": {
+    "bluebird": "^3.5.0",
+    "body-parser": "~1.17.1",
+    "chokidar": "^1.7.0",
+    "cookie-parser": "~1.4.3",
+    "debug": "~2.6.3",
+    "dotenv": "^4.0.0",
+    "express": "~4.15.2",
+    "hound": "^1.0.5",
+    "morgan": "~1.8.1",
+    "serve-favicon": "~2.4.2",
+    "sqlite": "^2.7.0",
+    "torrent-name-parser": "^0.6.5"
+  }
+}
