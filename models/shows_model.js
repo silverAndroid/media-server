@@ -6,7 +6,7 @@ const db = require('sqlite');
 
 module.exports.getAll = async () => {
     try {
-        const shows = await db.all('SELECT s.id, vn.name, s.season, s.episode FROM shows s JOIN videos v ON v.id = s.video_id JOIN video_names vn ON vn.id = v.v_name_id;');
+        const shows = await db.all('SELECT DISTINCT vn.id, vn.name FROM video_names vn JOIN videos v ON vn.id = v.v_name_id JOIN shows s ON v.id = s.video_id ORDER BY vn.id;');
         return {error: false, shows};
     } catch (e) {
         console.error(e);
@@ -14,10 +14,10 @@ module.exports.getAll = async () => {
     }
 };
 
-module.exports.get = async (id) => {
+module.exports.getSeasons = async (showID) => {
     try {
-        const show = await db.get('SELECT s.id, vn.name, s.season, s.episode FROM shows s JOIN videos v ON v.id = s.video_id JOIN video_names vn ON vn.id = v.v_name_id;');
-        return {error: false, show};
+        const seasons = await db.all('SELECT DISTINCT s.season FROM shows s JOIN videos v ON v.id = s.video_id JOIN video_names vn ON vn.id = v.v_name_id WHERE vn.id = ?;', showID).map(season => season.season);
+        return {error: false, seasons};
     } catch (e) {
         console.error(e);
         return {error: true};

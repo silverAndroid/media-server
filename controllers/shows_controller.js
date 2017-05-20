@@ -13,16 +13,14 @@ module.exports.getAll = async (req, res) => {
     res.status(statusCode).json(shows);
 };
 
-module.exports.get = async (req, res) => {
+module.exports.getSeasons = async (req, res) => {
     try {
-        const show = await showsModel.get(req.params.id);
-        if (show.show)
-            delete show.show.path;
+        const show = await showsModel.getSeasons(req.params.id);
 
         let statusCode = 200;
         if (show.error)
             statusCode = 500;
-        else if (show.show === undefined)
+        else if (show.seasons === undefined || show.seasons.length === 0)
             statusCode = 404;
         res.status(statusCode).json(show);
     } catch (e) {
