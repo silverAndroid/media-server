@@ -14,16 +14,12 @@ module.exports.getAll = async (req, res) => {
 };
 
 module.exports.getSeasons = async (req, res) => {
-    try {
-        const show = await showsModel.getSeasons(req.params.id);
+    const show = await showsModel.getSeasons(req.params.id);
 
-        let statusCode = 200;
-        if (show.error)
-            statusCode = 500;
-        else if (show.seasons === undefined || show.seasons.length === 0)
-            statusCode = 404;
-        res.status(statusCode).json(show);
-    } catch (e) {
-        console.error(e);
-    }
+    let statusCode = 200;
+    if (show.error)
+        statusCode = 500;
+    else if (show.seasons === undefined || show.seasons.length === 0)
+        statusCode = 404;
+    res.status(statusCode).json(show);
 };
