@@ -12,19 +12,30 @@ const beforeEach = mocha.beforeEach;
 const describe = mocha.describe;
 
 chai.use(require('chai-http'));
+chai.should();
 
 describe('Movies', () => {
     beforeEach(async () => {
         await emptyDatabase();
         const directoriesModel = require('../models/directories_model');
-        await directoriesModel.add(process.env.TEST_VIDEO_FOLDER);
+        await directoriesModel.add('.');
     });
 
     it('GET /movies | Get all movies', done => {
         chai.request(server)
             .get('/api/movies')
             .end((err, res) => {
-                console.log(res.body);
+                res.should.have.status(200);
+                res.body.should.be.a('object');
+                res.body.should.have.property('error');
+                res.body.should.have.property('error').eql(false);
+                res.body.should.have.property('movies');
+                res.body.movies.should.be.a('array');
+                res.body.movies.length.should.be.eql(1);
+                res.body.movies[0].should.have.property('name');
+                res.body.movies[0].should.have.property('name').eql('Star Wars Episode III Revenge of the Sith');
+                res.body.movies[0].should.have.property('year');
+                res.body.movies[0].should.have.property('year').eql(2005);
                 done();
             });
     });
@@ -33,8 +44,6 @@ describe('Movies', () => {
 const emptyDatabase = async () => {
     const db = require('sqlite');
     try {
-        await db.run('DELETE FROM video_names;');
-        await db.run('DELETE FROM directories;');
         await db.run('DELETE FROM users;');
     } catch (e) {
         console.error(e);
