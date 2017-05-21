@@ -17,7 +17,7 @@ CREATE TABLE video_names (
 DROP TABLE IF EXISTS movies;
 CREATE TABLE movies (
   id       INTEGER PRIMARY KEY AUTOINCREMENT,
-  video_id INTEGER NOT NULL,
+  video_id INTEGER NOT NULL UNIQUE,
   FOREIGN KEY (video_id) REFERENCES videos (id)
     ON DELETE CASCADE
 );
