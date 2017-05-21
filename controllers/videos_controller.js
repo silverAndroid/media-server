@@ -25,7 +25,7 @@ module.exports.getVideo = (req, res, path) => {
         const total = fs.statSync(path).size;
         if (req.headers.range) {
             const range = req.headers.range;
-            const parts = range.replace(/bytes=/, "").split("-");
+            const parts = range.replace(/bytes=/, '').split('-');
             const partialStart = parts[0];
             const partialEnd = parts[1];
 

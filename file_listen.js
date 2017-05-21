@@ -6,6 +6,7 @@ const chokidar = require('chokidar');
 const tnp = require('torrent-name-parser');
 const directoriesModel = require('./models/directories_model');
 const showsModel = require('./models/shows_model');
+const moviesModel = require('./models/movies_model');
 
 module.exports.init = async () => {
     const directories = await directoriesModel.getDirectories();
@@ -23,7 +24,11 @@ module.exports.init = async () => {
                     console.log(`TV Show - ${parsedFile.title} S${parsedFile.season}E${parsedFile.episode} added`);
                 }
             } else {
-                console.log(`Movie - ${parsedFile.title} (${parsedFile.year}) added`)
+                console.log(`Inserting movie ${parsedFile.title} (${parsedFile.year})`);
+                const isError = await moviesModel.add(parsedFile.title, path, parsedFile.year);
+                if (!isError.error) {
+                    console.log(`Movie - ${parsedFile.title} (${parsedFile.year}) added`);
+                }
             }
         }
     });
