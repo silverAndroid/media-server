@@ -3,19 +3,20 @@ CREATE TABLE videos (
   id        INTEGER PRIMARY KEY AUTOINCREMENT,
   v_name_id INTEGER NOT NULL,
   path      TEXT    NOT NULL UNIQUE,
-  FOREIGN KEY (v_name_id) REFERENCES video_names (id)
+  FOREIGN KEY (v_name_id) REFERENCES video_names (id) ON DELETE CASCADE
 );
 
 DROP TABLE IF EXISTS video_names;
 CREATE TABLE video_names (
   id   INTEGER PRIMARY KEY AUTOINCREMENT,
-  name TEXT NOT NULL UNIQUE
+  name TEXT NOT NULL,
+  year INTEGER,
+  UNIQUE (name, year)
 );
 
 DROP TABLE IF EXISTS movies;
 CREATE TABLE movies (
   id       INTEGER PRIMARY KEY AUTOINCREMENT,
-  year     INTEGER NOT NULL,
   video_id INTEGER NOT NULL,
   FOREIGN KEY (video_id) REFERENCES videos (id)
     ON DELETE CASCADE
