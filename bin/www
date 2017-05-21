@@ -4,11 +4,12 @@
  * Module dependencies.
  */
 const app = require('../app');
+const fileListen = require('../file_listen');
+const config = require('../config');
 const debug = require('debug')('moviestreamer:server');
 const http = require('http');
 const db = require('sqlite');
 const Promise = require('bluebird');
-const fileListen = require('../file_listen');
 
 /**
  * Get port from environment and store in Express.
@@ -26,14 +27,14 @@ const server = http.createServer(app);
  */
 Promise.resolve()
 // First, try connect to the database
-    .then(() => db.open('./db.sqlite', {Promise}))
+    .then(() => db.open(config[process.env.NODE_ENV], {Promise}))
     .catch(err => console.error(err.stack))
     // Finally, launch Node.js app
-    .finally(() => {
+    .finally(async () => {
         server.listen(port);
         server.on('error', onError);
         server.on('listening', onListening);
-        fileListen.init();
+        await fileListen.init();
     });
 
 
@@ -94,3 +95,5 @@ function onListening() {
         : 'port ' + addr.port;
     debug('Listening on ' + bind);
 }
+
+module.exports = server;
