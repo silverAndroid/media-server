@@ -26,7 +26,7 @@ module.exports.getSeasons = async (showID) => {
 
 module.exports.getSeason = async (showID, seasonNumber) => {
     try {
-        const season = await db.all('SELECT s.season, s.episode FROM shows s JOIN videos v ON v.id = s.video_id JOIN video_names vn ON vn.id = v.v_name_id WHERE vn.id = ? AND s.season = ?;', [showID, seasonNumber]);
+        const season = await db.all('SELECT s.episode FROM shows s JOIN videos v ON v.id = s.video_id JOIN video_names vn ON vn.id = v.v_name_id WHERE vn.id = ? AND s.season = ?;', [showID, seasonNumber]);
         return {error: false, season};
     } catch (e) {
         console.error(e);
@@ -44,9 +44,9 @@ module.exports.getEpisode = async (showID, seasonNumber, episodeNumber) => {
     }
 };
 
-module.exports.add = async (name, path, season, episode) => {
+module.exports.add = async (name, path, season, episode, year) => {
     try {
-        await db.run('INSERT INTO video_names (name) VALUES (?)', [name]);
+        await db.run('INSERT INTO video_names (name, year) VALUES (?, ?)', [name, year]);
     } catch (e) {
         if (e.message.indexOf('UNIQUE constraint failed') > -1) {
             if (e.message.indexOf('video_names.name') > -1) {
@@ -62,7 +62,11 @@ module.exports.add = async (name, path, season, episode) => {
     }
 
     try {
-        await db.run('INSERT INTO videos (v_name_id, path) VALUES ((SELECT id FROM video_names WHERE name = ?), ?)', [name, path]);
+        let params = [name, path];
+        if (year !== undefined)
+            params.splice(1, 0, year);
+
+        await db.run(`INSERT INTO videos (v_name_id, path) VALUES ((SELECT id FROM video_names WHERE name = ?${year === undefined ? '' : ' AND year = ?'}), ?)`, params);
     } catch (e) {
         if (e.message.indexOf('UNIQUE constraint failed') > -1) {
             if (e.message.indexOf('videos.path') > -1) {
