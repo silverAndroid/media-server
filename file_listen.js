@@ -12,14 +12,13 @@ module.exports.init = async () => {
     chokidar.watch(directories).on('add', async (path) => {
         const folderTree = path.split('\\');
         const file = folderTree[folderTree.length - 1];
-        if (file.endsWith('.mkv') || file.endsWith('.avi')) {
+        if (file.endsWith('.mp4') || file.endsWith('.mkv') || file.endsWith('.avi')) {
             const parsedFile = tnp(file);
             const isEpisode = parsedFile.season !== undefined && parsedFile.episode !== undefined;
 
-            // console.log(`File added ${file}`);
             if (isEpisode) {
                 console.log(`Inserting TV Show ${parsedFile.title} S${parsedFile.season}E${parsedFile.episode}`);
-                const isError = await showsModel.add(parsedFile.title, path, parsedFile.season, parsedFile.episode);
+                const isError = await showsModel.add(parsedFile.title, path, parsedFile.season, parsedFile.episode, parsedFile.year);
                 if (!isError.error) {
                     console.log(`TV Show - ${parsedFile.title} S${parsedFile.season}E${parsedFile.episode} added`);
                 }
