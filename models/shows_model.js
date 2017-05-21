@@ -45,41 +45,11 @@ module.exports.getEpisode = async (showID, seasonNumber, episodeNumber) => {
 };
 
 module.exports.add = async (name, path, season, episode, year) => {
-    try {
-        await db.run('INSERT INTO video_names (name, year) VALUES (?, ?)', [name, year]);
-    } catch (e) {
-        if (e.message.indexOf('UNIQUE constraint failed') > -1) {
-            if (e.message.indexOf('video_names.name') > -1) {
-                console.log(`${name} already exists`);
-            } else {
-                console.error(e);
-                return {error: true}
-            }
-        } else {
-            console.error(e);
-            return {error: true};
-        }
-    }
+    const videoNamesModel = require('./video_names_model');
+    const videosModel = require('./videos_model');
 
-    try {
-        let params = [name, path];
-        if (year !== undefined)
-            params.splice(1, 0, year);
-
-        await db.run(`INSERT INTO videos (v_name_id, path) VALUES ((SELECT id FROM video_names WHERE name = ?${year === undefined ? '' : ' AND year = ?'}), ?)`, params);
-    } catch (e) {
-        if (e.message.indexOf('UNIQUE constraint failed') > -1) {
-            if (e.message.indexOf('videos.path') > -1) {
-                console.log(`Video already exists`);
-            } else {
-                console.error(e);
-                return {error: true}
-            }
-        } else {
-            console.error(e);
-            return {error: true};
-        }
-    }
+    await videoNamesModel.add(name, year);
+    await videosModel.add(name, path, year);
 
     try {
         await db.run('INSERT INTO shows (season, episode, video_id) VALUES (?, ?, (SELECT id FROM videos WHERE path = ?))', [season, episode, path]);
@@ -93,7 +63,7 @@ module.exports.add = async (name, path, season, episode, year) => {
         } else {
             console.error(e);
         }
-        return {error: true}
+        return {error: true};
     }
     return {error: false};
 };

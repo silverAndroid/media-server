@@ -23,3 +23,28 @@ module.exports.get = async (id) => {
         return {error: true}
     }
 };
+
+module.exports.add = async (name, path, year) => {
+    const videoNamesModel = require('./video_names_model');
+    const videosModel = require('./videos_model');
+
+    await videoNamesModel.add(name, year);
+    await videosModel.add(name, path, year);
+
+    try {
+        await db.run('INSERT INTO movies (video_id) VALUES ((SELECT id FROM videos WHERE path = ?))', [path]);
+    } catch (e) {
+        if (e.message.indexOf('UNIQUE constraint failed') > -1) {
+            if (e.message.indexOf('movies.video_id') > -1) {
+                console.log(`${name} (${year}) already exists`);
+            } else {
+                console.error(e);
+            }
+        } else {
+            console.error(e);
+        }
+        return {error: true};
+    }
+
+    return {error: false};
+};
