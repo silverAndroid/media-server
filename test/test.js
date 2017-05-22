@@ -6,6 +6,7 @@ process.env.NODE_ENV = 'test';
 const chai = require('chai');
 const mocha = require('mocha');
 const server = require('../bin/www');
+const directoriesModel = require('../models/directories_model');
 
 const it = mocha.it;
 const beforeEach = mocha.beforeEach;
@@ -17,7 +18,6 @@ chai.should();
 describe('Movies', () => {
     beforeEach(async () => {
         await emptyDatabase();
-        const directoriesModel = require('../models/directories_model');
         await directoriesModel.add('.');
     });
 
@@ -36,6 +36,24 @@ describe('Movies', () => {
                 res.body.movies[0].should.have.property('name').eql('Star Wars Episode III Revenge of the Sith');
                 res.body.movies[0].should.have.property('year');
                 res.body.movies[0].should.have.property('year').eql(2005);
+                done();
+            });
+    });
+
+    it('GET /movies/:id | Get movie by id', done => {
+        chai.request(server)
+            .get('/api/movies/1')
+            .end((err, res) => {
+                res.should.have.status(200);
+                res.body.should.be.a('object');
+                res.body.should.have.property('error');
+                res.body.should.have.property('error').eql(false);
+                res.body.should.have.property('movie');
+                res.body.movie.should.be.a('object');
+                res.body.movie.should.have.property('name');
+                res.body.movie.should.have.property('name').eql('Star Wars Episode III Revenge of the Sith');
+                res.body.movie.should.have.property('year');
+                res.body.movie.should.have.property('year').eql(2005);
                 done();
             });
     });
