@@ -57,6 +57,18 @@ describe('Movies', () => {
                 done();
             });
     });
+
+    it('GET /movies/:id | Fail to retrieve movie that does not exist', done => {
+        chai.request(server)
+            .get('/api/movies/2')
+            .end((err, res) => {
+                res.should.have.status(404);
+                res.body.should.be.a('object');
+                res.body.should.have.property('error');
+                res.body.should.have.property('error').eql(false);
+                done();
+            });
+    });
 });
 
 const emptyDatabase = async () => {
