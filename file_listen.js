@@ -4,6 +4,7 @@
 
 const chokidar = require('chokidar');
 const tnp = require('torrent-name-parser');
+
 const directoriesModel = require('./models/directories_model');
 const showsModel = require('./models/shows_model');
 const moviesModel = require('./models/movies_model');

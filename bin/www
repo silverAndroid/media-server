@@ -3,13 +3,14 @@
 /**
  * Module dependencies.
  */
-const app = require('../app');
-const fileListen = require('../file_listen');
-const config = require('../config');
 const debug = require('debug')('moviestreamer:server');
 const http = require('http');
 const db = require('sqlite');
 const Promise = require('bluebird');
+
+const app = require('../app');
+const fileListen = require('../file_listen');
+const config = require('../config');
 
 /**
  * Get port from environment and store in Express.

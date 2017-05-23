@@ -2,9 +2,10 @@
  * Created by silver_android on 5/17/2017.
  */
 
+const fs = require('fs');
+
 const moviesModel = require('../models/movies_model');
 const showsModel = require('../models/shows_model');
-const fs = require('fs');
 
 module.exports.getMovie = async (req, res) => {
     const movie = await moviesModel.get(req.params.id);
