@@ -71,6 +71,31 @@ describe('Movies', () => {
     });
 });
 
+describe('Shows', () => {
+    beforeEach(async () => {
+        await emptyDatabase();
+        await directoriesModel.add('.');
+    });
+
+    it('GET /shows | Get all shows', done => {
+        chai.request(server)
+            .get('/api/shows')
+            .end((err, res) => {
+            console.log(res.body);
+                res.should.have.status(200);
+                res.body.should.be.a('object');
+                res.body.should.have.property('error');
+                res.body.should.have.property('error').eql(false);
+                res.body.should.have.property('shows');
+                res.body.shows.should.be.a('array');
+                res.body.shows.length.should.be.eql(1);
+                res.body.shows[0].should.have.property('name');
+                res.body.shows[0].should.have.property('name').eql('The Flash');
+                done();
+            });
+    });
+});
+
 const emptyDatabase = async () => {
     const db = require('sqlite');
     try {
