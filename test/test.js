@@ -98,7 +98,6 @@ describe('Shows', () => {
         chai.request(server)
             .get('/api/shows/2')
             .end((err, res) => {
-                console.log(res.body);
                 res.should.have.status(200);
                 res.body.should.be.a('object');
                 res.body.should.have.property('error');
@@ -108,6 +107,24 @@ describe('Shows', () => {
                 res.body.seasons.length.should.be.eql(1);
                 res.body.seasons[0].should.be.a('number');
                 res.body.seasons[0].should.be.eql(3);
+                done();
+            });
+    });
+
+    it('GET /shows/:id/:season | Get all episodes of a season', done => {
+        chai.request(server)
+            .get('/api/shows/2/3')
+            .end((err, res) => {
+                res.should.have.status(200);
+                res.body.should.be.a('object');
+                res.body.should.have.property('error');
+                res.body.should.have.property('error').eql(false);
+                res.body.should.have.property('season');
+                res.body.season.should.be.a('array');
+                res.body.season.length.should.be.eql(1);
+                res.body.season[0].should.be.a('object');
+                res.body.season[0].should.have.property('episode');
+                res.body.season[0].should.have.property('episode').eql(21);
                 done();
             });
     });
