@@ -81,7 +81,6 @@ describe('Shows', () => {
         chai.request(server)
             .get('/api/shows')
             .end((err, res) => {
-            console.log(res.body);
                 res.should.have.status(200);
                 res.body.should.be.a('object');
                 res.body.should.have.property('error');
@@ -91,6 +90,24 @@ describe('Shows', () => {
                 res.body.shows.length.should.be.eql(1);
                 res.body.shows[0].should.have.property('name');
                 res.body.shows[0].should.have.property('name').eql('The Flash');
+                done();
+            });
+    });
+
+    it('GET /shows/:id | Get all seasons of show', done => {
+        chai.request(server)
+            .get('/api/shows/2')
+            .end((err, res) => {
+                console.log(res.body);
+                res.should.have.status(200);
+                res.body.should.be.a('object');
+                res.body.should.have.property('error');
+                res.body.should.have.property('error').eql(false);
+                res.body.should.have.property('seasons');
+                res.body.seasons.should.be.a('array');
+                res.body.seasons.length.should.be.eql(1);
+                res.body.seasons[0].should.be.a('number');
+                res.body.seasons[0].should.be.eql(3);
                 done();
             });
     });
