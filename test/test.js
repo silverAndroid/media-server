@@ -9,6 +9,7 @@ const mocha = require('mocha');
 const server = require('../bin/www');
 const directoriesModel = require('../models/directories_model');
 
+const before = mocha.before;
 const it = mocha.it;
 const beforeEach = mocha.beforeEach;
 const describe = mocha.describe;
@@ -17,9 +18,17 @@ chai.use(require('chai-http'));
 chai.should();
 
 describe('Movies', () => {
+    before(async () => {
+        const db = require('../models/db');
+        const fileListen = require('../file_listen');
+
+        await db.init();
+        await fileListen.init();
+        await new Promise(resolve => setTimeout(resolve, 2000));
+    });
     beforeEach(async () => {
         await emptyDatabase();
-        await directoriesModel.add('.');
+        await directoriesModel.add('./test');
     });
 
     it('GET /movies | Get all movies', done => {
@@ -106,8 +115,10 @@ describe('Shows', () => {
                 res.body.should.have.property('seasons');
                 res.body.seasons.should.be.a('array');
                 res.body.seasons.length.should.be.eql(1);
-                res.body.seasons[0].should.be.a('number');
-                res.body.seasons[0].should.be.eql(3);
+                res.body.seasons[0].should.be.a('object');
+                res.body.seasons[0].should.have.property('season');
+                res.body.seasons[0].season.should.be.a('number');
+                res.body.seasons[0].season.should.be.a('number').eql(3);
                 done();
             });
     });
