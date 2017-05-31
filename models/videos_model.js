@@ -6,7 +6,7 @@ const db = require('sqlite');
 module.exports.add = async (name, path, year) => {
     try {
         let params = [name, path];
-        if (year !== undefined)
+        if (year)
             params.splice(1, 0, year);
 
         await db.run(`INSERT INTO videos (v_name_id, path) VALUES ((SELECT id FROM video_names WHERE name = ?${year === undefined ? '' : ' AND year = ?'}), ?)`, params);
@@ -16,11 +16,10 @@ module.exports.add = async (name, path, year) => {
                 console.log(`Video already exists`);
             } else {
                 console.error(e);
-                return {error: true}
             }
         } else {
             console.error(e);
-            return {error: true};
         }
+        return {error: true};
     }
 };

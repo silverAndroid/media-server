@@ -24,11 +24,11 @@ module.exports.get = async (id) => {
     }
 };
 
-module.exports.add = async (name, path, year) => {
+module.exports.add = async (name, path, tmdbID, imageURL, overview, year) => {
     const videoNamesModel = require('./video_names_model');
     const videosModel = require('./videos_model');
 
-    await videoNamesModel.add(name, year);
+    await videoNamesModel.add(name, tmdbID, imageURL, overview, year);
     await videosModel.add(name, path, year);
 
     try {
