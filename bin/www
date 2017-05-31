@@ -5,12 +5,9 @@
  */
 const debug = require('debug')('moviestreamer:server');
 const http = require('http');
-const db = require('sqlite');
-const Promise = require('bluebird');
 
 const app = require('../app');
-const fileListen = require('../file_listen');
-const config = require('../config');
+const db = require('../models/db');
 
 /**
  * Get port from environment and store in Express.
@@ -26,20 +23,17 @@ const server = http.createServer(app);
 /**
  * Listen on provided port, on all network interfaces.
  */
-Promise.resolve()
-// First, try connect to the database
-    .then(async () => {
-        await db.open(config[process.env.NODE_ENV], {Promise});
-        await fileListen.init();
-    })
-    .catch(err => console.error(err.stack))
-    // Finally, launch Node.js app
-    .finally(() => {
-        server.listen(port);
-        server.on('error', onError);
-        server.on('listening', onListening);
-    });
+if (process.env.NODE_ENV !== 'test') {
+    db.init().then(() => serverStart());
+} else {
+    serverStart();
+}
 
+function serverStart() {
+    server.listen(port);
+    server.on('error', onError);
+    server.on('listening', onListening);
+}
 
 /**
  * Normalize a port into a number, string, or false.
