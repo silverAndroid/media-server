@@ -16,7 +16,6 @@ module.exports.getTMDBShow = async (name, year) => {
         url: 'https://api.themoviedb.org/3/search/tv',
         qs: {
             'api_key': process.env.TMDB_API_KEY,
-            'language': 'EN-US',
             'query': name
         }
     };
@@ -50,12 +49,27 @@ module.exports.getTMDBSeason = async (tmdbID, season) => {
     }
 };
 
+module.exports.getTMDBEpisode = async (tmdbID, season, episode) => {
+    const options = {
+        url: `https://api.themoviedb.org/3/tv/${tmdbID}/season/${season}/episode/${episode}`,
+        qs: {
+            'api_key': process.env.TMDB_API_KEY
+        }
+    };
+    try {
+        const response = await limiter.schedule(rp, options);
+        return {error: false, data: response};
+    } catch (e) {
+        console.error(e);
+        return {error: true};
+    }
+};
+
 module.exports.getTMDBMovie = async (name, year) => {
     const options = {
         url: 'https://api.themoviedb.org/3/search/movie',
         qs: {
             'api_key': process.env.TMDB_API_KEY,
-            'language': 'EN-US',
             'query': name,
             year
         }
