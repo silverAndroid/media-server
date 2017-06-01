@@ -34,6 +34,22 @@ module.exports.getTMDBShow = async (name, year) => {
     }
 };
 
+module.exports.getTMDBSeason = async (tmdbID, season) => {
+    const options = {
+        url: `https://api.themoviedb.org/3/tv/${tmdbID}/season/${season}`,
+        qs: {
+            'api_key': process.env.TMDB_API_KEY
+        }
+    };
+    try {
+        const response = await limiter.schedule(rp, options);
+        return {error: false, data: response};
+    } catch (e) {
+        console.error(e);
+        return {error: true};
+    }
+};
+
 module.exports.getTMDBMovie = async (name, year) => {
     const options = {
         url: 'https://api.themoviedb.org/3/search/movie',
