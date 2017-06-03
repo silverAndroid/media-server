@@ -32,37 +32,90 @@ const addShow = async (name, path, season, episode, year) => {
     const show = await getShow(name, season, episode, year);
     if (!show.error) {
         console.log(`Inserting TV Show ${show.name} S${season}E${episode}`);
-        const isError = await showsModel.add(show.name, path, season, episode, show.tmdbID, show.imageURL, show.overview, year);
+        const isError = await showsModel.add(show, path, year);
         if (!isError.error) {
             console.log(`TV Show - ${name} S${season}E${episode} added`);
         }
     }
 };
 
-const getShow = async (name, season, episode, year) => {
-    console.log(`Checking if TV Show ${name} already exists`);
-    let show = await showsModel.getShow(name, year);
-    let imageURL, tmdbID, error;
-    if (!show.show) {
-        console.log(`Retrieving TMDB data for ${name} S${season}E${episode}`);
-        // image_url: poster_path, tmdb_id: id, overview: overview
-        show = await tmdbAPI.getTMDBShow(name, year);
-        error = show.error;
-        show = show.data;
-        delete show.data;
+const getShow = async (name, seasonNumber, episodeNumber, year) => {
+    const showSeasonsModel = require('./models/shows_seasons_model');
+    const showEpisodesModel = require('./models/shows_episodes_model');
 
-        imageURL = show.poster_path;
-        tmdbID = show.id;
+    console.log(`Checking if TV Show ${name} already exists`);
+    let [show, season, episode] = await Promise.all([
+        showsModel.getShow(name, year),
+        showSeasonsModel.get(name, seasonNumber, year),
+        showEpisodesModel.get(name, seasonNumber, episodeNumber, year)
+    ]);
+
+    let imageURL, tmdbID;
+    if (!show.show) {
+        console.log(`Retrieving TMDB data for ${name} S${seasonNumber}E${episodeNumber}`);
+        // image_url: poster_path, tmdb_id: id, overview: overview
+        const showRes = await tmdbAPI.getTMDBShow(name, year);
+
+        tmdbID = showRes.data.id;
+        imageURL = showRes.data.poster_path;
+        show = {
+            'name': showRes.data.name,
+            error: showRes.error,
+            year,
+            tmdbID,
+            imageURL,
+            'overview': showRes.data.overview
+        };
+
     } else {
-        error = show.error;
-        show = show.show;
-        imageURL = show.image_url;
-        tmdbID = show.tmdb_id;
+        imageURL = show.show.image_url;
+        tmdbID = show.show.tmdb_id;
+        show.overview = show.show.overview;
+        show.name = show.show.name;
+
+        delete show.show;
     }
 
     show.imageURL = imageURL;
     show.tmdbID = tmdbID;
-    show.error = error;
+
+    let requests = [];
+    if (!season.season) {
+        requests.push(tmdbAPI.getTMDBSeason(show.tmdbID, seasonNumber));
+    } else {
+        requests.push(undefined);
+        season = season.season;
+    }
+
+    if (!episode.episode) {
+        requests.push(tmdbAPI.getTMDBEpisode(show.tmdbID, seasonNumber, episodeNumber));
+    } else {
+        requests.push(undefined);
+        episode = episode.episode;
+    }
+
+    const [seasonRes, episodeRes] = await Promise.all(requests);
+    if (seasonRes && !seasonRes.error) {
+        season = {
+            name,
+            season: seasonRes.data.season_number,
+            imageURL: seasonRes.data.poster_path,
+            overview: seasonRes.data.overview
+        };
+    }
+
+    if (episodeRes && !episodeRes.error) {
+        episode = {
+            name,
+            season: episodeRes.data.season_number,
+            episode: episodeRes.data.episode_number,
+            imageURL: episodeRes.data.still_path,
+            overview: episodeRes.data.overview
+        };
+    }
+
+    show.season = season;
+    show.episode = episode;
 
     return show;
 };
@@ -71,13 +124,15 @@ const addMovie = async (name, path, year) => {
     console.log(`Inserting movie ${name} (${year})`);
     console.log(`Retrieving TMDB data for ${name} (${year})`);
     const movie = await tmdbAPI.getTMDBMovie(name, year);
-    console.log(`TMDB error: ${movie.error}`);
     if (!movie.error) {
         const movieData = movie.data;
         const isError = await moviesModel.add(name, path, movieData.id, movieData.poster_path, movieData.overview, year);
-        console.log(`DB error: ${isError.error}`);
         if (!isError.error) {
             console.log(`Movie - ${name} (${year}) added`);
         }
     }
+};
+
+const getMovie = async (name, year) => {
+
 };

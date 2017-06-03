@@ -17,18 +17,19 @@ const describe = mocha.describe;
 chai.use(require('chai-http'));
 chai.should();
 
-describe('Movies', () => {
-    before(async () => {
-        const db = require('../models/db');
-        const fileListen = require('../file_listen');
+before(async () => {
+    const db = require('../models/db');
+    const fileListen = require('../file_listen');
 
-        await db.init();
-        await fileListen.init();
-        await new Promise(resolve => setTimeout(resolve, 2000));
-    });
+    await db.init();
+    await directoriesModel.add('./test');
+    await fileListen.init();
+    await new Promise(resolve => setTimeout(resolve, 7000));
+});
+
+describe('Movies', () => {
     beforeEach(async () => {
         await emptyDatabase();
-        await directoriesModel.add('./test');
     });
 
     it('GET /movies | Get all movies', done => {
@@ -84,7 +85,7 @@ describe('Movies', () => {
 describe('Shows', () => {
     beforeEach(async () => {
         await emptyDatabase();
-        await directoriesModel.add('.');
+        await directoriesModel.add('./test');
     });
 
     it('GET /shows | Get all shows', done => {
@@ -98,8 +99,11 @@ describe('Shows', () => {
                 res.body.should.have.property('shows');
                 res.body.shows.should.be.a('array');
                 res.body.shows.length.should.be.eql(1);
+                res.body.shows[0].should.be.a('object');
                 res.body.shows[0].should.have.property('name');
                 res.body.shows[0].should.have.property('name').eql('The Flash');
+                res.body.shows[0].should.have.property('overview');
+                res.body.shows[0].should.have.property('overview').eql('After a particle accelerator causes a freak storm, CSI Investigator Barry Allen is struck by lightning and falls into a coma. Months later he awakens with the power of super speed, granting him the ability to move through Central City like an unseen guardian angel. Though initially excited by his newfound powers, Barry is shocked to discover he is not the only \"meta-human\" who was created in the wake of the accelerator explosion -- and not everyone is using their new powers for good. Barry partners with S.T.A.R. Labs and dedicates his life to protect the innocent. For now, only a few close friends and associates know that Barry is literally the fastest man alive, but it won\'t be long before the world learns what Barry Allen has become...The Flash.');
                 done();
             });
     });
@@ -117,8 +121,9 @@ describe('Shows', () => {
                 res.body.seasons.length.should.be.eql(1);
                 res.body.seasons[0].should.be.a('object');
                 res.body.seasons[0].should.have.property('season');
-                res.body.seasons[0].season.should.be.a('number');
-                res.body.seasons[0].season.should.be.a('number').eql(3);
+                res.body.seasons[0].should.have.property('season').eql(3);
+                res.body.seasons[0].should.have.property('overview');
+                res.body.seasons[0].should.have.property('overview').eql('');
                 done();
             });
     });
@@ -137,6 +142,10 @@ describe('Shows', () => {
                 res.body.season[0].should.be.a('object');
                 res.body.season[0].should.have.property('episode');
                 res.body.season[0].should.have.property('episode').eql(21);
+                res.body.season[0].should.have.property('overview');
+                res.body.season[0].should.have.property('overview').eql('Barry takes drastic measures to stop Savitar. Meanwhile, H.R. continues to push Tracy Brand to design the trap for Savitar and Killer Frost returns with an interesting proposal.');
+                res.body.season[0].should.have.property('image_url');
+                res.body.season[0].should.have.property('image_url').eql('/3jVaJYz5v8SGXH8SNk4QJ6JhVMU.jpg');
                 done();
             });
     });

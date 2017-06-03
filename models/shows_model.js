@@ -58,7 +58,7 @@ module.exports.getEpisode = async (showID, seasonNumber, episodeNumber) => {
     }
 };
 
-module.exports.add = async (name, path, season, episode, tmdbID, imageURL, overview, year) => {
+module.exports.add = async ({name, tmdbID, imageURL, overview, season, episode}, path, year) => {
     const videoNamesModel = require('./video_names_model');
     const videosModel = require('./videos_model');
     const showsSeasonsModel = require('./shows_seasons_model');
@@ -71,12 +71,10 @@ module.exports.add = async (name, path, season, episode, tmdbID, imageURL, overv
 
     try {
         await db.run('INSERT INTO shows (video_id) VALUES ((SELECT id FROM videos WHERE path = ?))', [path]);
-        error = await showsSeasonsModel.add(name, season, '', '').error || error;
-        error = await showsEpisodesModel.add(name, season, episode, '', '').error || error;
     } catch (e) {
         if (e.message.indexOf('UNIQUE constraint failed') > -1) {
             if (e.message.indexOf('shows.video_id') > -1) {
-                console.log(`${name} S${season}E${episode} already exists`);
+                console.log(`${name} S${season.season}E${episode.episode} already exists`);
             } else {
                 console.error(e);
             }
@@ -87,7 +85,8 @@ module.exports.add = async (name, path, season, episode, tmdbID, imageURL, overv
         } else {
             console.error(e);
         }
-        return {error: true};
     }
+    error = await showsSeasonsModel.add(name, season.season, season.imageURL, season.overview).error || error;
+    error = await showsEpisodesModel.add(name, season.season, episode.episode, episode.imageURL, episode.overview).error || error;
     return {error};
 };

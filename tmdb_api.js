@@ -23,9 +23,7 @@ module.exports.getTMDBShow = async (name, year) => {
         options.qs.first_air_date_year = year;
 
     try {
-        console.log('Waiting for response');
         const response = await limiter.schedule(rp, options);
-        console.log('Received response');
         return {error: false, data: response.results[0]};
     } catch (e) {
         console.error(e);
@@ -41,7 +39,9 @@ module.exports.getTMDBSeason = async (tmdbID, season) => {
         }
     };
     try {
+        console.log(`Waiting for ${tmdbID} S${season}`);
         const response = await limiter.schedule(rp, options);
+        console.log(`Received response from ${tmdbID} S${season}`);
         return {error: false, data: response};
     } catch (e) {
         console.error(e);
@@ -57,7 +57,9 @@ module.exports.getTMDBEpisode = async (tmdbID, season, episode) => {
         }
     };
     try {
+        console.log(`Waiting for ${tmdbID} S${season} E${episode}`);
         const response = await limiter.schedule(rp, options);
+        console.log(`Received response from ${tmdbID} S${season} E${episode}`);
         return {error: false, data: response};
     } catch (e) {
         console.error(e);

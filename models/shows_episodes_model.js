@@ -19,3 +19,17 @@ module.exports.add = async (name, season, episode, imageURL, overview) => {
         return {error: true};
     }
 };
+
+module.exports.get = async (name, seasonNumber, episodeNumber, year) => {
+    try {
+        let params = [name, seasonNumber, episodeNumber];
+        if (year)
+            params.splice(1, 0, year);
+
+        const episode = await db.get(`SELECT vn.name, se.season, se.episode, se.image_url AS imageURL, se.overview FROM shows_episodes se JOIN shows s ON s.id = se.show_id JOIN videos v ON v.id = s.video_id JOIN video_names vn ON vn.id = v.v_name_id WHERE vn.name = ?${year ? ' AND vn.year = ?' : ''} AND se.season = ? AND se.episode = ?`, params);
+        return {error: false, episode};
+    } catch (e) {
+        console.error(e);
+        return {error: true};
+    }
+};
