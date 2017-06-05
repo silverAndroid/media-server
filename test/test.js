@@ -179,6 +179,38 @@ describe('Shows', () => {
                 done();
             });
     });
+
+    it('GET /shows/:id/:season/:episode | Get episode of a TV show', done => {
+        chai.request(server)
+            .get('/api/shows/2/3/21')
+            .end((err, res) => {
+                res.should.have.status(200);
+                res.body.should.be.a('object');
+                res.body.should.have.property('error');
+                res.body.should.have.property('error').eql(false);
+                res.body.should.have.property('episode');
+                res.body.episode.should.be.a('object');
+                res.body.episode.should.have.property('name');
+                res.body.episode.should.have.property('name').eql('Cause and Effect');
+                res.body.episode.should.have.property('image_url');
+                res.body.episode.should.have.property('image_url').eql('/3jVaJYz5v8SGXH8SNk4QJ6JhVMU.jpg');
+                res.body.episode.should.have.property('overview');
+                res.body.episode.should.have.property('overview').eql('Barry takes drastic measures to stop Savitar. Meanwhile, H.R. continues to push Tracy Brand to design the trap for Savitar and Killer Frost returns with an interesting proposal.');
+                done();
+            });
+    });
+
+    it('GET /shows/:id/:season/:episode | Get episode of a TV show that does not exist', done => {
+        chai.request(server)
+            .get('/api/shows/2/3/22')
+            .end((err, res) => {
+                res.should.have.status(404);
+                res.body.should.be.a('object');
+                res.body.should.have.property('error');
+                res.body.should.have.property('error').eql(false);
+                done();
+            });
+    });
 });
 
 const emptyDatabase = async () => {

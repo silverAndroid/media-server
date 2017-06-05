@@ -9,6 +9,7 @@ const videosController = require('../controllers/videos_controller');
 app.get('/', controller.getAll);
 app.get('/:id', controller.getSeasons);
 app.get('/:id/:season', controller.getSeason);
+app.get('/:id/:season/:episode', controller.getEpisode);
 app.get('/:id/:season/:episode/video', videosController.getShow);
 
 module.exports = app;

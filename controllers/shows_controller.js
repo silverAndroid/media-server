@@ -34,3 +34,16 @@ module.exports.getSeason = async (req, res) => {
         statusCode = 404;
     res.status(statusCode).json(season);
 };
+
+module.exports.getEpisode = async (req, res) => {
+    const episode = await showsModel.getEpisode(req.params.id, req.params.season, req.params.episode);
+    if (episode.episode)
+        delete episode.episode.path;
+
+    let statusCode = 200;
+    if (episode.error)
+        statusCode = 500;
+    else if (episode.episode === undefined)
+        statusCode = 404;
+    res.status(statusCode).json(episode);
+};
