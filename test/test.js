@@ -128,6 +128,21 @@ describe('Shows', () => {
             });
     });
 
+    it('GET /shows/:id | Fail to retrieve seasons of a show that does not exist', done => {
+        chai.request(server)
+            .get('/api/shows/5')
+            .end((err, res) => {
+                res.should.have.status(404);
+                res.body.should.be.a('object');
+                res.body.should.have.property('error');
+                res.body.should.have.property('error').eql(false);
+                res.body.should.have.property('seasons');
+                res.body.seasons.should.be.a('array');
+                res.body.seasons.length.should.be.eql(0);
+                done();
+            })
+    });
+
     it('GET /shows/:id/:season | Get all episodes of a season', done => {
         chai.request(server)
             .get('/api/shows/2/3')
