@@ -164,6 +164,21 @@ describe('Shows', () => {
                 done();
             });
     });
+
+    it('GET /shows/:id/:season | Fail to retrieve episodes for a season that does not exist', done => {
+        chai.request(server)
+            .get('/api/shows/2/4')
+            .end((err, res) => {
+                res.should.have.status(404);
+                res.body.should.be.a('object');
+                res.body.should.have.property('error');
+                res.body.should.have.property('error').eql(false);
+                res.body.should.have.property('season');
+                res.body.season.should.be.a('array');
+                res.body.season.length.should.be.eql(0);
+                done();
+            });
+    });
 });
 
 const emptyDatabase = async () => {
