@@ -1,0 +1,22 @@
+/* You can add global styles to this file, and also import other style files */
+@import '~@angular/material/prebuilt-themes/deeppurple-amber.css';
+
+body {
+    margin: 0;
+}
+
+md-spinner {
+    position: relative;
+    left: 50%;
+}
+
+md-card {
+     margin: 16px;
+ }
+
+.overview {
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+}
