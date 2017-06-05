@@ -6,10 +6,10 @@ import {Season} from "../season";
 
 @Component({
     selector: 'app-page-show',
-    templateUrl: './page-show.component.html',
-    styleUrls: ['./page-show.component.css']
+    templateUrl: './page-seasons.component.html',
+    styleUrls: ['./page-seasons.component.css']
 })
-export class PageShowComponent implements OnInit {
+export class PageSeasonsComponent implements OnInit {
 
     private _numCols: number;
     private _showID: number;

@@ -1,20 +1,20 @@
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { PageShowComponent } from './page-show.component';
+import { PageSeasonsComponent } from './page-seasons.component';
 
-describe('PageShowComponent', () => {
-  let component: PageShowComponent;
-  let fixture: ComponentFixture<PageShowComponent>;
+describe('PageSeasonsComponent', () => {
+  let component: PageSeasonsComponent;
+  let fixture: ComponentFixture<PageSeasonsComponent>;
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      declarations: [ PageShowComponent ]
+      declarations: [ PageSeasonsComponent ]
     })
     .compileComponents();
   }));
 
   beforeEach(() => {
-    fixture = TestBed.createComponent(PageShowComponent);
+    fixture = TestBed.createComponent(PageSeasonsComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });

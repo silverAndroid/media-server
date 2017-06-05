@@ -12,8 +12,8 @@ import {ShowsService} from "./shows.service";
 import {HttpModule} from "@angular/http";
 import {FlexLayoutModule} from "@angular/flex-layout";
 import {RouterModule} from "@angular/router";
-import { PageShowComponent } from './page-show/page-show.component';
-import { SeasonComponent } from './season/season.component';
+import {PageSeasonsComponent} from "./page-seasons/page-seasons.component";
+import {SeasonComponent} from "./season/season.component";
 
 @NgModule({
     declarations: [
@@ -22,7 +22,7 @@ import { SeasonComponent } from './season/season.component';
         MovieComponent,
         PageShowsComponent,
         ShowComponent,
-        PageShowComponent,
+        PageSeasonsComponent,
         SeasonComponent
     ],
     imports: [
@@ -38,7 +38,7 @@ import { SeasonComponent } from './season/season.component';
             },
             {
                 path: 'shows/:id',
-                component: PageShowComponent
+                component: PageSeasonsComponent
             }
         ])
     ],
