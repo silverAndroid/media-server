@@ -52,6 +52,7 @@ CREATE TABLE shows_episodes (
   show_id   INTEGER NOT NULL,
   season    INTEGER NOT NULL,
   episode   INTEGER NOT NULL,
+  name      TEXT    NOT NULL,
   image_url TEXT    NOT NULL,
   overview  TEXT,
   FOREIGN KEY (show_id) REFERENCES shows (id),

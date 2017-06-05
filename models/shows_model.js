@@ -50,7 +50,7 @@ module.exports.getSeason = async (showID, seasonNumber) => {
 
 module.exports.getEpisode = async (showID, seasonNumber, episodeNumber) => {
     try {
-        const episode = await db.get('SELECT se.season, se.episode, vl.path FROM shows_episodes se JOIN shows s ON se.show_id = s.id JOIN videos v ON v.id = s.video_id JOIN video_locations vl ON vl.video_id = v.id WHERE v.id = ? AND se.season = ? AND se.episode = ?;', [showID, seasonNumber, episodeNumber]);
+        const episode = await db.get('SELECT se.name, se.image_url, se.overview, vl.path FROM shows_episodes se JOIN shows s ON se.show_id = s.id JOIN videos v ON v.id = s.video_id JOIN video_locations vl ON vl.video_id = v.id WHERE v.id = ? AND se.season = ? AND se.episode = ?;', [showID, seasonNumber, episodeNumber]);
         return {error: false, episode};
     } catch (e) {
         console.error(e);
@@ -74,7 +74,7 @@ module.exports.add = async ({name, tmdbID, imageURL, overview, season, episode},
     } catch (e) {
         if (e.message.indexOf('UNIQUE constraint failed') > -1) {
             if (e.message.indexOf('shows.video_id') > -1) {
-                console.log(`${name} S${season.season}E${episode.episode} already exists`);
+                console.log(`${name} is already known as a show`);
             } else {
                 console.error(e);
             }
@@ -87,6 +87,6 @@ module.exports.add = async ({name, tmdbID, imageURL, overview, season, episode},
         }
     }
     error = await showsSeasonsModel.add(name, season.season, season.imageURL, season.overview).error || error;
-    error = await showsEpisodesModel.add(name, season.season, episode.episode, episode.imageURL, episode.overview).error || error;
+    error = await showsEpisodesModel.add(name, season.season, episode.episode, episode.name, episode.imageURL, episode.overview).error || error;
     return {error};
 };
