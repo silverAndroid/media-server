@@ -6,7 +6,7 @@ const db = require('sqlite');
 
 module.exports.getAll = async () => {
     try {
-        const movies = await db.all('SELECT m.id, vn.name, vn.year FROM movies m JOIN videos v ON v.id = m.video_id JOIN video_names vn ON vn.id = v.v_name_id;');
+        const movies = await db.all('SELECT m.id, v.name, v.year FROM movies m JOIN videos v ON v.id = m.video_id;');
         return {error: false, movies};
     } catch (e) {
         console.error(e);
@@ -16,7 +16,7 @@ module.exports.getAll = async () => {
 
 module.exports.get = async (id) => {
     try {
-        const movie = await db.get('SELECT m.id, vn.year, vn.name, v.path FROM movies m JOIN videos v ON v.id = m.video_id JOIN video_names vn ON vn.id = v.v_name_id WHERE m.id = ?', id);
+        const movie = await db.get('SELECT m.id, v.year, v.name, vl.path FROM movies m JOIN videos v ON v.id = m.video_id JOIN video_locations vl ON vl.video_id = v.id WHERE m.id = ?', id);
         return {error: false, movie}
     } catch (e) {
         console.error(e);
@@ -25,14 +25,14 @@ module.exports.get = async (id) => {
 };
 
 module.exports.add = async (name, path, tmdbID, imageURL, overview, year) => {
-    const videoNamesModel = require('./video_names_model');
     const videosModel = require('./videos_model');
+    const videoLocationsModel = require('./video_locations_model');
 
-    await videoNamesModel.add(name, tmdbID, imageURL, overview, year);
-    await videosModel.add(name, path, year);
+    await videosModel.add(name, tmdbID, imageURL, overview, year);
+    await videoLocationsModel.add(name, path, year);
 
     try {
-        await db.run('INSERT INTO movies (video_id) VALUES ((SELECT id FROM videos WHERE path = ?))', [path]);
+        await db.run('INSERT INTO movies (video_id) VALUES ((SELECT id FROM video_locations WHERE path = ?))', [path]);
     } catch (e) {
         if (e.message.indexOf('UNIQUE constraint failed') > -1) {
             if (e.message.indexOf('movies.video_id') > -1) {

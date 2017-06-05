@@ -1,21 +1,21 @@
 DROP TABLE IF EXISTS videos;
 CREATE TABLE videos (
   id        INTEGER PRIMARY KEY AUTOINCREMENT,
-  v_name_id INTEGER NOT NULL,
-  path      TEXT    NOT NULL UNIQUE,
-  FOREIGN KEY (v_name_id) REFERENCES video_names (id)
-    ON DELETE CASCADE
-);
-
-DROP TABLE IF EXISTS video_names;
-CREATE TABLE video_names (
-  id        INTEGER PRIMARY KEY AUTOINCREMENT,
   name      TEXT NOT NULL,
   year      INTEGER,
   tmdb_id   INTEGER UNIQUE,
-  image_url TEXT,
-  overview  TEXT,
+  image_url TEXT NOT NULL,
+  overview  TEXT NOT NULL,
   UNIQUE (name, year)
+);
+
+DROP TABLE IF EXISTS video_locations;
+CREATE TABLE video_locations (
+  id       INTEGER PRIMARY KEY AUTOINCREMENT,
+  video_id INTEGER NOT NULL,
+  path     TEXT    NOT NULL UNIQUE,
+  FOREIGN KEY (video_id) REFERENCES videos (id)
+    ON DELETE CASCADE
 );
 
 DROP TABLE IF EXISTS movies;
@@ -39,7 +39,7 @@ CREATE TABLE shows_seasons (
   id        INTEGER PRIMARY KEY AUTOINCREMENT,
   show_id   INTEGER NOT NULL,
   season    INTEGER NOT NULL,
-  image_url TEXT    NOT NULL,
+  image_url TEXT,
   overview  TEXT,
   FOREIGN KEY (show_id) REFERENCES shows (id)
     ON DELETE CASCADE,

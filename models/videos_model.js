@@ -3,17 +3,21 @@
  */
 const db = require('sqlite');
 
-module.exports.add = async (name, path, year) => {
+module.exports.add = async (name, tmdbID, imageURL, overview, year) => {
     try {
-        let params = [name, path];
-        if (year)
-            params.splice(1, 0, year);
-
-        await db.run(`INSERT INTO videos (v_name_id, path) VALUES ((SELECT id FROM video_names WHERE name = ?${year === undefined ? '' : ' AND year = ?'}), ?)`, params);
+        await db.run('INSERT INTO videos (name, year, tmdb_id, image_url, overview) VALUES (?, ?, ?, ?, ?)', [name, year, tmdbID, imageURL, overview]);
     } catch (e) {
         if (e.message.indexOf('UNIQUE constraint failed') > -1) {
-            if (e.message.indexOf('videos.path') > -1) {
-                console.log(`Video already exists`);
+            if (e.message.indexOf('videos.name, videos.year') > -1) {
+                console.log(`${name} already exists`);
+            } else if (e.message.indexOf('videos.tmdb_id') > -1) {
+                console.log(`${name} (${tmdbID}) already exists`);
+            } else {
+                console.error(e);
+            }
+        } else if (e.message.indexOf('NOT NULL constraint failed') > -1) {
+            if (e.message.indexOf('videos.image_url') > -1) {
+                console.log(`${name} imageURL null (${imageURL})`);
             } else {
                 console.error(e);
             }
@@ -22,4 +26,5 @@ module.exports.add = async (name, path, year) => {
         }
         return {error: true};
     }
+    return {error: false};
 };
