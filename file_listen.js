@@ -50,54 +50,62 @@ const getShow = async (name, seasonNumber, episodeNumber, year) => {
         showEpisodesModel.get(name, seasonNumber, episodeNumber, year)
     ]);
 
-    let imageURL, tmdbID;
+    show = await parseShow(show, name, seasonNumber, episodeNumber, year);
+    const result = await getSeasonEpisode(show, season, episode, seasonNumber, episodeNumber);
+    season = result.season;
+    episode = result.episode;
+
+    show.season = season;
+    show.episode = episode;
+
+    return show;
+};
+
+const parseShow = async (show, name, seasonNumber, episodeNumber, year) => {
     if (!show.show) {
         console.log(`Retrieving TMDB data for ${name} S${seasonNumber}E${episodeNumber}`);
         // image_url: poster_path, tmdb_id: id, overview: overview
         const showRes = await tmdbAPI.getTMDBShow(name, year);
 
-        tmdbID = showRes.data.id;
-        imageURL = showRes.data.poster_path;
         show = {
-            'name': showRes.data.name,
+            name: showRes.data.name,
             error: showRes.error,
             year,
-            tmdbID,
-            imageURL,
-            'overview': showRes.data.overview
+            tmdbID: showRes.data.id,
+            imageURL: showRes.data.poster_path,
+            overview: showRes.data.overview
         };
-
     } else {
-        imageURL = show.show.image_url;
-        tmdbID = show.show.tmdb_id;
+        show.imageURL = show.show.image_url;
+        show.tmdbID = show.show.tmdb_id;
         show.overview = show.show.overview;
         show.name = show.show.name;
 
         delete show.show;
     }
 
-    show.imageURL = imageURL;
-    show.tmdbID = tmdbID;
+    return show;
+};
 
+const getSeasonEpisode = async (show, season, episode, seasonNumber, episodeNumber) => {
     let requests = [];
     if (!season.season) {
         requests.push(tmdbAPI.getTMDBSeason(show.tmdbID, seasonNumber));
     } else {
-        requests.push(undefined);
+        requests.push(Promise.resolve(null));
         season = season.season;
     }
 
     if (!episode.episode) {
         requests.push(tmdbAPI.getTMDBEpisode(show.tmdbID, seasonNumber, episodeNumber));
     } else {
-        requests.push(undefined);
+        requests.push(Promise.resolve(null));
         episode = episode.episode;
     }
 
     const [seasonRes, episodeRes] = await Promise.all(requests);
     if (seasonRes && !seasonRes.error) {
         season = {
-            name,
             season: seasonRes.data.season_number,
             imageURL: seasonRes.data.poster_path,
             overview: seasonRes.data.overview
@@ -106,7 +114,7 @@ const getShow = async (name, seasonNumber, episodeNumber, year) => {
 
     if (episodeRes && !episodeRes.error) {
         episode = {
-            name,
+            name: episodeRes.data.name,
             season: episodeRes.data.season_number,
             episode: episodeRes.data.episode_number,
             imageURL: episodeRes.data.still_path,
@@ -114,10 +122,7 @@ const getShow = async (name, seasonNumber, episodeNumber, year) => {
         };
     }
 
-    show.season = season;
-    show.episode = episode;
-
-    return show;
+    return {season, episode};
 };
 
 const addMovie = async (name, path, year) => {
