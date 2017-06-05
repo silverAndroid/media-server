@@ -1,0 +1,4 @@
+<md-spinner *ngIf="loading"></md-spinner>
+<div *ngFor="let row of rows" fxLayout="row" fxLayoutAlign="center">
+  <episode *ngFor="let episode of row" [data]="episode" fxFlex="25%"></episode>
+</div>

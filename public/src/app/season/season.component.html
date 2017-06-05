@@ -5,7 +5,7 @@
         </md-card-title>
     </md-card-header>
     <img md-card-image [src]="season.imageURL">
-    <md-card-content>
+    <md-card-content *ngIf="season.overview">
         <p class="overview">
             {{season.overview}}
         </p>

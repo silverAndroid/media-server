@@ -14,9 +14,15 @@ export class ShowsService {
             .map(response => response.json().data);
     }
 
-    getSeasons(showID: number): Observable<any> {
+    getSeasons(showID: number): Observable<any[]> {
         return this._http
             .get(`http://localhost:8080/api/shows/${showID}`)
+            .map(response => response.json().data);
+    }
+
+    getEpisodes(showID: number, season: number): Observable<any[]> {
+        return this._http
+            .get(`http://localhost:8080/api/shows/${showID}/${season}`)
             .map(response => response.json().data);
     }
 }

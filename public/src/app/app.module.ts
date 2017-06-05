@@ -14,6 +14,8 @@ import {FlexLayoutModule} from "@angular/flex-layout";
 import {RouterModule} from "@angular/router";
 import {PageSeasonsComponent} from "./page-seasons/page-seasons.component";
 import {SeasonComponent} from "./season/season.component";
+import { PageEpisodesComponent } from './page-episodes/page-episodes.component';
+import { EpisodeComponent } from './episode/episode.component';
 
 @NgModule({
     declarations: [
@@ -23,7 +25,9 @@ import {SeasonComponent} from "./season/season.component";
         PageShowsComponent,
         ShowComponent,
         PageSeasonsComponent,
-        SeasonComponent
+        SeasonComponent,
+        PageEpisodesComponent,
+        EpisodeComponent
     ],
     imports: [
         BrowserAnimationsModule,
@@ -39,6 +43,10 @@ import {SeasonComponent} from "./season/season.component";
             {
                 path: 'shows/:id',
                 component: PageSeasonsComponent
+            },
+            {
+                path: 'shows/:id/:season',
+                component: PageEpisodesComponent
             }
         ])
     ],

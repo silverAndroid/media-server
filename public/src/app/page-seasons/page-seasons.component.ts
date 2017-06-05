@@ -16,7 +16,7 @@ export class PageSeasonsComponent implements OnInit {
     rows: Season[][];
     loading: boolean;
 
-    constructor(private _showsService: ShowsService, private _route: ActivatedRoute, private _location: Location) {
+    constructor(private _showsService: ShowsService, private _route: ActivatedRoute) {
         this._numCols = 4;
         this.rows = [];
         this.loading = true;
