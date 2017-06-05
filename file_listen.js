@@ -62,7 +62,7 @@ const getShow = async (name, seasonNumber, episodeNumber, year) => {
 };
 
 const parseShow = async (show, name, seasonNumber, episodeNumber, year) => {
-    if (!show.show) {
+    if (!show.data) {
         console.log(`Retrieving TMDB data for ${name} S${seasonNumber}E${episodeNumber}`);
         // image_url: poster_path, tmdb_id: id, overview: overview
         const showRes = await tmdbAPI.getTMDBShow(name, year);
@@ -76,12 +76,12 @@ const parseShow = async (show, name, seasonNumber, episodeNumber, year) => {
             overview: showRes.data.overview
         };
     } else {
-        show.imageURL = show.show.image_url;
-        show.tmdbID = show.show.tmdb_id;
-        show.overview = show.show.overview;
-        show.name = show.show.name;
+        show.imageURL = show.data.image_url;
+        show.tmdbID = show.data.tmdb_id;
+        show.overview = show.data.overview;
+        show.name = show.data.name;
 
-        delete show.show;
+        delete show.data;
     }
 
     return show;
@@ -89,18 +89,18 @@ const parseShow = async (show, name, seasonNumber, episodeNumber, year) => {
 
 const getSeasonEpisode = async (show, season, episode, seasonNumber, episodeNumber) => {
     let requests = [];
-    if (!season.season) {
+    if (!season.data) {
         requests.push(tmdbAPI.getTMDBSeason(show.tmdbID, seasonNumber));
     } else {
         requests.push(Promise.resolve(null));
-        season = season.season;
+        season = season.data;
     }
 
-    if (!episode.episode) {
+    if (!episode.data) {
         requests.push(tmdbAPI.getTMDBEpisode(show.tmdbID, seasonNumber, episodeNumber));
     } else {
         requests.push(Promise.resolve(null));
-        episode = episode.episode;
+        episode = episode.data;
     }
 
     const [seasonRes, episodeRes] = await Promise.all(requests);

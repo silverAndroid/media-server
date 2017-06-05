@@ -11,17 +11,17 @@ module.exports.getMovie = async (req, res) => {
     const movie = await moviesModel.get(req.params.id);
     const path = movie.movie.path;
 
-    module.exports.getVideo(req, res, path);
+    getVideo(req, res, path);
 };
 
-module.exports.getShow = async (req, res) => {
+module.exports.getEpisode = async (req, res) => {
     const episode = await showsModel.getEpisode(req.params.id, req.params.season, req.params.episode);
     const path = episode.episode.path;
 
-    module.exports.getVideo(req, res, path);
+    getVideo(req, res, path);
 };
 
-module.exports.getVideo = (req, res, path) => {
+const getVideo = (req, res, path) => {
     try {
         const total = fs.statSync(path).size;
         if (req.headers.range) {

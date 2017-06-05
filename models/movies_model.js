@@ -7,7 +7,7 @@ const db = require('sqlite');
 module.exports.getAll = async () => {
     try {
         const movies = await db.all('SELECT m.id, v.name, v.year FROM movies m JOIN videos v ON v.id = m.video_id;');
-        return {error: false, movies};
+        return {error: false, data: movies};
     } catch (e) {
         console.error(e);
         return {error: true}
@@ -17,7 +17,7 @@ module.exports.getAll = async () => {
 module.exports.get = async (id) => {
     try {
         const movie = await db.get('SELECT m.id, v.year, v.name, vl.path FROM movies m JOIN videos v ON v.id = m.video_id JOIN video_locations vl ON vl.video_id = v.id WHERE m.id = ?', id);
-        return {error: false, movie}
+        return {error: false, data: movie}
     } catch (e) {
         console.error(e);
         return {error: true}

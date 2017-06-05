@@ -27,7 +27,7 @@ module.exports.get = async (name, seasonNumber, year) => {
             params.splice(1, 0, year);
 
         const season = await db.get(`SELECT v.name, ss.season, ss.image_url AS imageURL, ss.overview FROM shows_seasons ss JOIN shows s ON ss.show_id = s.id JOIN videos v ON v.id = s.video_id WHERE v.name = ?${year ? ' AND v.year = ?' : ''} AND ss.season = ?`, params);
-        return {error: false, season};
+        return {error: false, data: season};
     } catch (e) {
         console.error(e);
         return {error: true};

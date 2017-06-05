@@ -14,13 +14,13 @@ module.exports.getAll = async (req, res) => {
 
 module.exports.get = async (req, res) => {
     const movie = await moviesModel.get(req.params.id);
-    if (movie.movie)
-        delete movie.movie.path;
+    if (movie.data)
+        delete movie.data.path;
 
     let statusCode = 200;
     if (movie.error)
         statusCode = 500;
-    else if (movie.movie === undefined)
+    else if (!movie.data)
         statusCode = 404;
     res.status(statusCode).json(movie);
 };

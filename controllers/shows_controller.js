@@ -19,7 +19,7 @@ module.exports.getSeasons = async (req, res) => {
     let statusCode = 200;
     if (seasons.error)
         statusCode = 500;
-    else if (seasons.seasons === undefined || seasons.seasons.length === 0)
+    else if (!seasons.data || seasons.data.length === 0)
         statusCode = 404;
     res.status(statusCode).json(seasons);
 };
@@ -30,20 +30,20 @@ module.exports.getSeason = async (req, res) => {
     let statusCode = 200;
     if (season.error)
         statusCode = 500;
-    else if (season.season === undefined || season.season.length === 0)
+    else if (!season.data || season.data.length === 0)
         statusCode = 404;
     res.status(statusCode).json(season);
 };
 
 module.exports.getEpisode = async (req, res) => {
     const episode = await showsModel.getEpisode(req.params.id, req.params.season, req.params.episode);
-    if (episode.episode)
-        delete episode.episode.path;
+    if (episode.data)
+        delete episode.data.path;
 
     let statusCode = 200;
     if (episode.error)
         statusCode = 500;
-    else if (episode.episode === undefined)
+    else if (!episode.data)
         statusCode = 404;
     res.status(statusCode).json(episode);
 };

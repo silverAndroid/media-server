@@ -7,7 +7,7 @@ const db = require('sqlite');
 module.exports.getAll = async () => {
     try {
         const shows = await db.all('SELECT DISTINCT v.id, v.name, v.image_url, v.overview FROM videos v JOIN shows s ON s.video_id = v.id ORDER BY v.id;');
-        return {error: false, shows};
+        return {error: false, data: shows};
     } catch (e) {
         console.error(e);
         return {error: true};
@@ -21,7 +21,7 @@ module.exports.getShow = async (name, year) => {
             params.push(year);
 
         const show = await db.get(`SELECT v.id, v.name, v.year, v.tmdb_id, v.image_url, v.overview FROM videos v WHERE v.name = ?${year ? ' AND v.year = ?' : ''} ORDER BY v.id;`, params);
-        return {error: false, show};
+        return {error: false, data: show};
     } catch (e) {
         console.error(e);
         return {error: true};
@@ -31,7 +31,7 @@ module.exports.getShow = async (name, year) => {
 module.exports.getSeasons = async (showID) => {
     try {
         const seasons = await db.all('SELECT ss.season, ss.image_url, ss.overview FROM shows_seasons ss JOIN shows s ON ss.show_id = s.id JOIN videos v ON v.id = s.video_id WHERE v.id = ?;', showID);
-        return {error: false, seasons};
+        return {error: false, data: seasons};
     } catch (e) {
         console.error(e);
         return {error: true};
@@ -41,7 +41,7 @@ module.exports.getSeasons = async (showID) => {
 module.exports.getSeason = async (showID, seasonNumber) => {
     try {
         const season = await db.all('SELECT se.episode, se.image_url, se.overview FROM shows_episodes se JOIN shows s ON se.show_id = s.id JOIN videos v ON v.id = s.video_id WHERE v.id = ? AND se.season = ?;', [showID, seasonNumber]);
-        return {error: false, season};
+        return {error: false, data: season};
     } catch (e) {
         console.error(e);
         return {error: true};
@@ -51,7 +51,7 @@ module.exports.getSeason = async (showID, seasonNumber) => {
 module.exports.getEpisode = async (showID, seasonNumber, episodeNumber) => {
     try {
         const episode = await db.get('SELECT se.name, se.image_url, se.overview, vl.path FROM shows_episodes se JOIN shows s ON se.show_id = s.id JOIN videos v ON v.id = s.video_id JOIN video_locations vl ON vl.video_id = v.id WHERE v.id = ? AND se.season = ? AND se.episode = ?;', [showID, seasonNumber, episodeNumber]);
-        return {error: false, episode};
+        return {error: false, data: episode};
     } catch (e) {
         console.error(e);
         return {error: true};
