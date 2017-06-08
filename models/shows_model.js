@@ -47,6 +47,16 @@ module.exports.getSeasons = async (showID) => {
 
 module.exports.getSeason = async (showID, seasonNumber) => {
     try {
+        const season = await db.get('SELECT ss.season, ss.image_url, ss.overview FROM shows_seasons ss JOIN shows s ON ss.show_id = s.id JOIN videos v ON v.id = s.video_id WHERE v.id = ? AND ss.season = ?;', [showID, seasonNumber]);
+        return {error: false, data: season};
+    } catch (e) {
+        console.error(e);
+        return {error: true};
+    }
+};
+
+module.exports.getEpisodes = async (showID, seasonNumber) => {
+    try {
         const season = await db.all('SELECT se.episode, se.image_url, se.overview FROM shows_episodes se JOIN shows s ON se.show_id = s.id JOIN videos v ON v.id = s.video_id WHERE v.id = ? AND se.season = ?;', [showID, seasonNumber]);
         return {error: false, data: season};
     } catch (e) {

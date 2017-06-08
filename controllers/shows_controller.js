@@ -28,27 +28,29 @@ module.exports.getSeasons = async (req, res) => {
         delete show.data.tmdb_id;
     }
 
-    let json = {
-        error,
-        show,
-        seasons
-    };
     if (error)
         statusCode = 500;
     else if (!show.data || !seasons.data || seasons.data.length === 0)
         statusCode = 404;
-    res.status(statusCode).json(json);
+    res.status(statusCode).json({error, show, seasons});
 };
 
-module.exports.getSeason = async (req, res) => {
-    const season = await showsModel.getSeason(req.params.id, req.params.season);
+module.exports.getEpisodes = async (req, res) => {
+    const [season, episodes] = await Promise.all([
+        showsModel.getSeason(req.params.id, req.params.season),
+        showsModel.getEpisodes(req.params.id, req.params.season)
+    ]);
 
     let statusCode = 200;
-    if (season.error)
+    const error = season.error || episodes.error;
+    delete season.error;
+    delete episodes.error;
+
+    if (error)
         statusCode = 500;
-    else if (!season.data || season.data.length === 0)
+    else if (!season.data || !episodes.data || episodes.data.length === 0)
         statusCode = 404;
-    res.status(statusCode).json(season);
+    res.status(statusCode).json({error, season, episodes});
 };
 
 module.exports.getEpisode = async (req, res) => {
