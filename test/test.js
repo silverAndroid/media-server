@@ -22,7 +22,7 @@ before(async () => {
     const fileListen = require('../file_listen');
 
     await db.init();
-    await directoriesModel.add('./test');
+    await directoriesModel.add(process.env.TEST_VIDEO_FOLDER || './test');
     await fileListen.init();
     await new Promise(resolve => setTimeout(resolve, 7000));
 });
@@ -85,7 +85,6 @@ describe('Movies', () => {
 describe('Shows', () => {
     beforeEach(async () => {
         await emptyDatabase();
-        await directoriesModel.add('./test');
     });
 
     it('GET /shows | Get all shows', done => {
