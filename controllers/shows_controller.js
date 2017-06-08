@@ -14,14 +14,30 @@ module.exports.getAll = async (req, res) => {
 };
 
 module.exports.getSeasons = async (req, res) => {
-    const seasons = await showsModel.getSeasons(req.params.id);
+    const [show, seasons] = await Promise.all([
+        showsModel.getShow({showID: req.params.id}),
+        showsModel.getSeasons(req.params.id)
+    ]);
 
     let statusCode = 200;
-    if (seasons.error)
+    const error = show.error || seasons.error;
+    delete show.error;
+    delete seasons.error;
+    if (show.data) {
+        delete show.data.id;
+        delete show.data.tmdb_id;
+    }
+
+    let json = {
+        error,
+        show,
+        seasons
+    };
+    if (error)
         statusCode = 500;
-    else if (!seasons.data || seasons.data.length === 0)
+    else if (!show.data || !seasons.data || seasons.data.length === 0)
         statusCode = 404;
-    res.status(statusCode).json(seasons);
+    res.status(statusCode).json(json);
 };
 
 module.exports.getSeason = async (req, res) => {

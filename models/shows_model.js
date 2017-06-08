@@ -14,13 +14,20 @@ module.exports.getAll = async () => {
     }
 };
 
-module.exports.getShow = async (name, year) => {
+module.exports.getShow = async ({name, year, showID}) => {
     try {
-        let params = [name];
-        if (year)
-            params.push(year);
+        let where, params;
+        if (name) {
+            params = [name];
+            if (year)
+                params.push(year);
+            where = `v.name = ?${year ? ' AND v.year = ?' : ''}`;
+        } else if (showID) {
+            where = `v.id = ?`;
+            params = [showID];
+        }
 
-        const show = await db.get(`SELECT v.id, v.name, v.year, v.tmdb_id, v.image_url, v.overview FROM videos v WHERE v.name = ?${year ? ' AND v.year = ?' : ''} ORDER BY v.id;`, params);
+        const show = await db.get(`SELECT v.id, v.name, v.year, v.tmdb_id, v.image_url, v.overview FROM videos v WHERE ${where} ORDER BY v.id;`, params);
         return {error: false, data: show};
     } catch (e) {
         console.error(e);

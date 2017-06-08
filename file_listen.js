@@ -45,7 +45,7 @@ const getShow = async (name, seasonNumber, episodeNumber, year) => {
 
     console.log(`Checking if TV Show ${name} already exists`);
     let [show, season, episode] = await Promise.all([
-        showsModel.getShow(name, year),
+        showsModel.getShow({name, year}),
         showSeasonsModel.get(name, seasonNumber, year),
         showEpisodesModel.get(name, seasonNumber, episodeNumber, year)
     ]);
