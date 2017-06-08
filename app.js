@@ -6,7 +6,6 @@ const cookieParser = require('cookie-parser');
 const bodyParser = require('body-parser');
 
 const api = require('./routes/api_routes');
-const index = require('./routes/index');
 const users = require('./routes/users_routes');
 
 const app = express();
@@ -16,7 +15,7 @@ const app = express();
 app.use(logger('dev'));
 app.use(bodyParser.json());
 app.use(cookieParser());
-// app.use(express.static(path.join(__dirname, 'public')));
+app.use(express.static(path.join(__dirname, 'public/dist')));
 
 app.use((req, res, next) => {
     res.header("Access-Control-Allow-Origin", "*");
@@ -24,8 +23,8 @@ app.use((req, res, next) => {
     next();
 });
 
-app.use('/', express.static(path.join(__dirname, 'public/dist')));
 app.use('/api', api);
+app.get('*', (req, res) => res.sendFile(path.join(__dirname, 'public/dist/index.html')));
 app.use('/users', users);
 
 module.exports = app;
