@@ -9,14 +9,14 @@ const showsModel = require('../models/shows_model');
 
 module.exports.getMovie = async (req, res) => {
     const movie = await moviesModel.get(req.params.id);
-    const path = movie.movie.path;
+    const path = movie.data.path;
 
     getVideo(req, res, path);
 };
 
 module.exports.getEpisode = async (req, res) => {
     const episode = await showsModel.getEpisode(req.params.id, req.params.season, req.params.episode);
-    const path = episode.episode.path;
+    const path = episode.data.path;
 
     getVideo(req, res, path);
 };
