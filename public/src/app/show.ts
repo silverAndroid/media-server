@@ -24,7 +24,7 @@ export class Show {
     }
 
     set imageURL(value: string) {
-        this._imageURL = `http://image.tmdb.org/t/p/w500${value}`;
+        this._imageURL = `https://image.tmdb.org/t/p/w500${value}`;
     }
 
     get overview(): string {
