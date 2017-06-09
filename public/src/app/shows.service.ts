@@ -14,15 +14,15 @@ export class ShowsService {
             .map(response => response.json().data);
     }
 
-    getSeasons(showID: number): Observable<any[]> {
+    getSeasons(showID: number): Observable<any> {
         return this._http
             .get(`/api/shows/${showID}`)
-            .map(response => response.json().data);
+            .map(response => response.json());
     }
 
-    getEpisodes(showID: number, season: number): Observable<any[]> {
+    getEpisodes(showID: number, season: number): Observable<any> {
         return this._http
             .get(`/api/shows/${showID}/${season}`)
-            .map(response => response.json().data);
+            .map(response => response.json());
     }
 }
