@@ -1,5 +1,5 @@
 export class Show {
-    constructor(private _id: number, private _name: string, private _imageURL: string, private _overview: string) {
+    constructor(private _name: string, private _imageURL: string, private _overview: string, private _id?: number) {
         this.imageURL = _imageURL;
     }
 

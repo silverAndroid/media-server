@@ -25,7 +25,7 @@ export class PageShowsComponent implements OnInit {
                 shows.forEach((show, i) => {
                     if (i % this._numCols === 0)
                         this.rows.push([]);
-                    this.rows[Math.floor(i / this._numCols)].push(new Show(show.id, show.name, show.image_url, show.overview));
+                    this.rows[Math.floor(i / this._numCols)].push(new Show(show.name, show.image_url, show.overview, show.id));
                 });
                 this.loading = false;
             }
