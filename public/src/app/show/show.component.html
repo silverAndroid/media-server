@@ -4,10 +4,11 @@
             {{show.name}}
         </md-card-title>
     </md-card-header>
-    <img md-card-image [src]="show.imageURL">
-    <md-card-content>
-        <p class="overview">
+    <img *ngIf="!expanded" md-card-image [src]="show.imageURL">
+    <md-card-content style="overflow: hidden;">
+        <img *ngIf="expanded" md-card-image [src]="show.imageURL" [ngStyle]="imgStyle">
+        <span [ngClass]="overviewClass">
             {{show.overview}}
-        </p>
+        </span>
     </md-card-content>
 </md-card>

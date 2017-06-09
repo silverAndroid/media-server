@@ -1,4 +1,7 @@
 <md-spinner *ngIf="loading"></md-spinner>
+<div *ngIf="show" fxLayout="row" fxLayoutAlign="center">
+    <show [expanded]="true" [data]="show"></show>
+</div>
 <div *ngFor="let row of rows" fxLayout="row" fxLayoutAlign="center">
     <season *ngFor="let season of row" [data]="season" [routerLink]="['/shows', _showID, season.number]" fxFlex="25%"></season>
 </div>
