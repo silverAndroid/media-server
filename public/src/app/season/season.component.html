@@ -4,10 +4,11 @@
             Season {{season.number}}
         </md-card-title>
     </md-card-header>
-    <img md-card-image [src]="season.imageURL">
-    <md-card-content *ngIf="season.overview">
-        <p class="overview">
+    <img *ngIf="!expanded" md-card-image [src]="season.imageURL">
+    <md-card-content *ngIf="season.overview" style="overflow: hidden;">
+        <img *ngIf="expanded" md-card-image [src]="season.imageURL" [ngStyle]="imgStyle">
+        <span [ngClass]="overviewClass">
             {{season.overview}}
-        </p>
+        </span>
     </md-card-content>
 </md-card>

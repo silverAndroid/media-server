@@ -2,6 +2,7 @@ import {Component, OnInit} from "@angular/core";
 import {Episode} from "../episode";
 import {ShowsService} from "../shows.service";
 import {ActivatedRoute} from "@angular/router";
+import {Season} from "../season";
 
 @Component({
     selector: 'app-page-episodes',
@@ -13,6 +14,7 @@ export class PageEpisodesComponent implements OnInit {
     private _numCols: number;
     private _showID: number;
     rows: Episode[][];
+    season: Season;
     loading: boolean;
 
     constructor(private _showsService: ShowsService, private _route: ActivatedRoute) {
@@ -27,7 +29,10 @@ export class PageEpisodesComponent implements OnInit {
                 this._showID = params.id;
                 return this._showsService.getEpisodes(this._showID, params.season)
             })
-            .subscribe(episodes => {
+            .subscribe(res => {
+                const season = res.season.data;
+                this.season = new Season(season.season, season.image_url, season.overview);
+                const episodes = res.episodes.data;
                 episodes.forEach((episode, i) => {
                     if (i % this._numCols === 0)
                         this.rows.push([]);
