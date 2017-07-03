@@ -45,3 +45,61 @@ const splitFiles = (path, pathNoExt) => {
         });
     });
 };
+
+const convert = (paths) => {
+    return new Promise((resolve, reject) => {
+        const tasks = paths.map(path => {
+            path = path.match(/file '(.+)'/)[1];
+            return limit(() => encode(path))
+        });
+        Promise.all(tasks).then(resolve).catch(reject);
+    });
+};
+
+const encode = (path) => {
+    return new Promise((resolve, reject) => {
+        const pathNoExt = path.split(/\.[^/.]+$/)[0];
+        const fileName = path.split('\\').pop();
+        const command = process.env.FFMPEG_PATH;
+        const args = ['-i', path, '-f', 'mp4', '-vcodec', 'libx264', '-preset', 'fast', '-speed', 8, '-profile:v', 'main', '-acodec', 'aac', `${pathNoExt}.mp4`, '-hide_banner'];
+        console.log(`Encoding ${path} to ${pathNoExt}.mp4`);
+        console.log(`Spawning ${command} ${args.join(' ')}`);
+        const child = childProcess.spawn(command, args);
+        let message = '';
+
+        child.stdin.setEncoding('utf-8');
+        child.stdout.setEncoding('utf-8');
+        child.stderr.setEncoding('utf-8');
+        child.stdout.on('data', (data) => {
+            console.log(`stdout: ${data}`);
+        });
+        child.stderr.on('data', (data) => {
+            message += data;
+            if (message.indexOf('Overwrite ?') > -1) {
+                child.stdin.write('y\n');
+                child.stdin.end();
+                message = '';
+            }
+            // console.error(data);
+        });
+        child.on('exit', (code, signal) => {
+            if (!signal) {
+                if (code === 0) {
+                    resolve();
+                    console.log(`Successfully encoded ${fileName}`);
+                    fs.unlink(path, err => {
+                        if (err) {
+                            console.log(err);
+                        }
+                    });
+                } else {
+                    fs.unlink(`${pathNoExt}.mp4`, err => console.error(err));
+                    reject(`Exit code ${code} sent!`);
+                }
+            } else {
+                fs.unlink(`${pathNoExt}.mp4`, err => console.error(err));
+                reject(`Process signal ${signal} sent!`);
+            }
+        });
+    });
+};
