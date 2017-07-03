@@ -5,7 +5,7 @@ const childProcess = require('child_process');
 const fs = require('fs');
 const getDuration = require('get-video-duration');
 const promiseLimit = require('promise-limit');
-const limit = promiseLimit(10);
+const limit = promiseLimit(Number(process.env.MAX_FFMPEG_PROCESSES));
 
 const chunkSize = Number(process.env.CHUNK_SIZE);
 
