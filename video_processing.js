@@ -10,7 +10,7 @@ const limit = promiseLimit(Number(process.env.MAX_FFMPEG_PROCESSES));
 const chunkSize = Number(process.env.CHUNK_SIZE);
 
 module.exports.process = async (path, pathNoExt) => {
-    const files = await splitFiles(path, pathNoExt);
+    const files = await limit(() => splitFiles(path, pathNoExt));
     await convert(files);
 };
 
@@ -19,14 +19,14 @@ const splitFiles = (path, pathNoExt) => {
         // video duration in seconds
         getDuration(path).then(duration => {
             const extension = path.split('.').pop();
-            const fileName = `${pathNoExt}_%03d.${extension}`;
+            const fileName = `${pathNoExt}_%04d.${extension}`;
             const command = process.env.FFMPEG_PATH;
             const args = ['-i', path, '-c', 'copy', '-map', 0, '-segment_time', chunkSize, '-f', 'segment', fileName];
             const concatFile = `${path}.txt`;
             const numFiles = Math.ceil(duration / chunkSize);
             const files = Array(numFiles)
                 .fill()
-                .map((_, i) => `file '${pathNoExt}_${String(i).padStart(3, '0')}.${extension}'`);
+                .map((_, i) => `file '${pathNoExt}_${String(i).padStart(4, '0')}.${extension}'`);
 
             console.log(`Spawning ${command} ${args.join(' ')}`);
             const child = childProcess.spawn(command, args);

@@ -17,7 +17,7 @@ module.exports.init = async () => {
         const fileName = path.split('\\').pop();
 
         // Checks if file is not a chunked video
-        if (!fileName.match(/.+_\d{3,}\..+/)) {
+        if (!fileName.match(/.+_\d{4,}\..+/)) {
             if (fileName.endsWith('.mp4')) {
                 await parseFile(fileName, path);
             } else if (fileName.endsWith('.mkv') || fileName.endsWith('.avi')) {
