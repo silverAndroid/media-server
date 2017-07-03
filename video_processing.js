@@ -35,7 +35,11 @@ const splitFiles = (path, pathNoExt) => {
                     if (code === 0) {
                         console.log(`Successfully chunked ${path} to ${fileName}`);
                         resolve(files);
+                    } else {
+                        reject(`Exit code ${code} sent!`);
                     }
+                } else {
+                    reject(`Process signal ${signal} sent!`);
                 }
             });
             fs.writeFile(concatFile, files.join('\n'), err => {
