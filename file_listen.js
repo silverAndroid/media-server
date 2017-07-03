@@ -9,23 +9,36 @@ const directoriesModel = require('./models/directories_model');
 const showsModel = require('./models/shows_model');
 const moviesModel = require('./models/movies_model');
 const tmdbAPI = require('./tmdb_api');
+const videoProcessor = require('./video_processing');
 
 module.exports.init = async () => {
     const directories = await directoriesModel.getDirectories();
     chokidar.watch(directories).on('add', async (path) => {
-        const folderTree = path.split('\\');
-        const fileName = folderTree[folderTree.length - 1];
-        if (fileName.endsWith('.mp4') || fileName.endsWith('.mkv') || fileName.endsWith('.avi')) {
-            const file = tnp(fileName);
-            const isEpisode = file.season !== undefined && file.episode !== undefined;
+        const fileName = path.split('\\').pop();
 
-            if (isEpisode) {
-                await addShow(file.title, path, file.season, file.episode, file.year);
-            } else {
-                await addMovie(file.title, path, file.year);
+        // Checks if file is not a chunked video
+        if (!fileName.match(/.+_\d{3,}\..+/)) {
+            if (fileName.endsWith('.mp4')) {
+                await parseFile(fileName, path);
+            } else if (fileName.endsWith('.mkv') || fileName.endsWith('.avi')) {
+                const pathNoExt = path.split(/\.[^/.]+$/)[0];
+                console.log(`Converting ${path} to ${pathNoExt}.mp4`);
+                await videoProcessor.process(path, pathNoExt);
+                await parseFile(fileName, `${pathNoExt}.mp4`);
             }
         }
     });
+};
+
+const parseFile = async (fileName, path) => {
+    const file = tnp(fileName);
+    const isEpisode = file.season !== undefined && file.episode !== undefined;
+
+    if (isEpisode) {
+        await addShow(file.title, path, file.season, file.episode, file.year);
+    } else {
+        await addMovie(file.title, path, file.year);
+    }
 };
 
 const addShow = async (name, path, season, episode, year) => {
