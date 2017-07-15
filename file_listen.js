@@ -4,28 +4,43 @@
 
 const chokidar = require('chokidar');
 const tnp = require('torrent-name-parser');
+const fs = require('fs');
 
+const db = require('./models/db');
 const directoriesModel = require('./models/directories_model');
 const showsModel = require('./models/shows_model');
 const moviesModel = require('./models/movies_model');
 const tmdbAPI = require('./tmdb_api');
 const videoProcessor = require('./video_processing');
 
-module.exports.init = async () => {
-    const directories = await directoriesModel.getDirectories();
-    chokidar.watch(directories).on('add', async (path) => {
-        const fileName = path.split('\\').pop();
+db.init().then(() => {
+    console.log('file_listen: init db');
+    directoriesModel.getDirectories().then(directories => {
+        console.log('file_listen: get directories');
+        chokidar.watch(directories).on('add', async (path) => {
+            const directories = path.split('\\');
+            const fileName = directories.pop();
 
-        // Checks if file is not a chunked video
-        if (fileName.match(/.+_\d{4,}\..+/) === null) {
-            if (fileName.endsWith('.mp4')) {
-                await parseFile(fileName, path);
-            } else if (fileName.endsWith('.mkv') || fileName.endsWith('.avi')) {
-                await videoProcessor.process(path);
+            // Checks if file is not a chunked video
+            if (fileName.match(/.+_\d{4,}\./) === null) {
+                if (fileName.endsWith('.mkv') || fileName.endsWith('.avi')) {
+                    const fileNameNoExt = fileName.split(/\.[^/.]+$/)[0];
+                    fs.readdir(directories.join('\\'), async (err, files) => {
+                        if (!err) {
+                            if (!files.some(file => file.split(/\.[^/.]+$/)[0] !== fileNameNoExt && file.indexOf(fileNameNoExt) > -1)) {
+                                await videoProcessor.process(path);
+                            }
+                        }
+                    });
+                }
+            } else {
+                if (fileName.endsWith('.mp4')) {
+                    await parseFile(fileName, path);
+                }
             }
-        }
+        });
     });
-};
+});
 
 const parseFile = async (fileName, path) => {
     const file = tnp(fileName);
