@@ -4,30 +4,30 @@
 
 const db = require('sqlite');
 
+const videosModel = require('./videos_model');
+const videoLocationsModel = require('./video_locations_model');
+
 module.exports.getAll = async () => {
     try {
         const movies = await db.all('SELECT m.id, v.name, v.year FROM movies m JOIN videos v ON v.id = m.video_id;');
-        return {error: false, data: movies};
+        return { error: false, data: movies };
     } catch (e) {
         console.error(e);
-        return {error: true}
+        return { error: true };
     }
 };
 
 module.exports.get = async (id) => {
     try {
         const movie = await db.get('SELECT m.id, v.year, v.name, vl.path FROM movies m JOIN videos v ON v.id = m.video_id JOIN video_locations vl ON vl.video_id = v.id WHERE m.id = ?', id);
-        return {error: false, data: movie}
+        return { error: false, data: movie };
     } catch (e) {
         console.error(e);
-        return {error: true}
+        return { error: true };
     }
 };
 
 module.exports.add = async (name, path, tmdbID, imageURL, overview, year) => {
-    const videosModel = require('./videos_model');
-    const videoLocationsModel = require('./video_locations_model');
-
     await videosModel.add(name, tmdbID, imageURL, overview, year);
     await videoLocationsModel.add(name, path, year);
 
@@ -43,8 +43,8 @@ module.exports.add = async (name, path, tmdbID, imageURL, overview, year) => {
         } else {
             console.error(e);
         }
-        return {error: true};
+        return { error: true };
     }
 
-    return {error: false};
+    return { error: false };
 };

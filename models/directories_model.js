@@ -10,7 +10,7 @@ module.exports.getDirectories = async () => {
         directories = await db.all('SELECT path FROM directories;');
     } catch (e) {
         console.error(e);
-        return {error: true};
+        return { error: true };
     }
     return directories.map(directory => directory.path);
 };
@@ -24,12 +24,12 @@ module.exports.add = async (directory) => {
                 console.log(`${directory} already added`);
             } else {
                 console.error(e);
-                return {error: true};
+                return { error: true };
             }
         } else {
             console.error(e);
-            return {error: true};
+            return { error: true };
         }
     }
-    return {error: false};
+    return { error: false };
 };

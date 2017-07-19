@@ -24,7 +24,7 @@ module.exports.add = async (name, tmdbID, imageURL, overview, year) => {
         } else {
             console.error(e);
         }
-        return {error: true};
+        return { error: true };
     }
-    return {error: false};
+    return { error: false };
 };

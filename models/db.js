@@ -8,7 +8,7 @@ const config = require('../config');
 
 module.exports.init = async () => {
     try {
-        await db.open(config[process.env.NODE_ENV], {Promise});
+        await db.open(config[process.env.NODE_ENV], { Promise });
     } catch (e) {
         console.error(e.stack);
     }

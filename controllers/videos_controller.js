@@ -15,7 +15,11 @@ module.exports.getMovie = async (req, res) => {
 };
 
 module.exports.getEpisode = async (req, res) => {
-    const episode = await showsModel.getEpisode(req.params.id, req.params.season, req.params.episode);
+    const episode = await showsModel.getEpisode(
+        req.params.id,
+        req.params.season,
+        req.params.episode,
+    );
     const path = episode.data.path;
 
     getVideo(req, res, path);
@@ -33,23 +37,23 @@ const getVideo = (req, res, path) => {
             const start = parseInt(partialStart, 10);
             const end = partialEnd ? parseInt(partialEnd, 10) : total - 1;
             const chunkSize = (end - start) + 1;
-            console.log('RANGE: ' + start + ' - ' + end + ' = ' + chunkSize);
+            console.log(`RANGE: ${start} - ${end} = ${chunkSize}`);
 
-            const file = fs.createReadStream(path, {start: start, end: end});
+            const file = fs.createReadStream(path, { start, end });
             res.writeHead(206, {
-                'Content-Range': 'bytes ' + start + '-' + end + '/' + total,
+                'Content-Range': `bytes ${start}-${end}/${total}`,
                 'Accept-Ranges': 'bytes',
                 'Content-Length': chunkSize,
-                'Content-Type': 'video/mp4'
+                'Content-Type': 'video/mp4',
             });
             file.pipe(res);
         } else {
-            console.log('ALL: ' + total);
-            res.writeHead(200, {'Content-Length': total, 'Content-Type': 'video/mp4'});
+            console.log(`ALL: ${total}`);
+            res.writeHead(200, { 'Content-Length': total, 'Content-Type': 'video/mp4' });
             fs.createReadStream(path).pipe(res);
         }
     } catch (e) {
         console.error(e);
-        res.status(500).json({error: true});
+        res.status(500).json({ error: true });
     }
 };

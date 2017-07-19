@@ -6,6 +6,7 @@ const db = require('sqlite');
 module.exports.add = async (name, season, episode, episodeName, imageURL, overview) => {
     try {
         await db.run('INSERT INTO shows_episodes (show_id, season, episode, name, image_url, overview) VALUES ((SELECT s.id FROM shows s JOIN videos v ON s.video_id = v.id WHERE v.name = ?), ?, ?, ?, ?, ?)', [name, season, episode, episodeName, imageURL, overview]);
+        return { error: false };
     } catch (e) {
         if (e.message.indexOf('UNIQUE constraint failed') > -1) {
             if (e.message.indexOf('shows_episodes.show_id, shows_episodes.season, shows_episodes.episode') > -1) {
@@ -16,20 +17,21 @@ module.exports.add = async (name, season, episode, episodeName, imageURL, overvi
         } else {
             console.error(e);
         }
-        return {error: true};
+        return { error: true };
     }
 };
 
 module.exports.get = async (name, seasonNumber, episodeNumber, year) => {
     try {
-        let params = [name, seasonNumber, episodeNumber];
-        if (year)
+        const params = [name, seasonNumber, episodeNumber];
+        if (year) {
             params.splice(1, 0, year);
+        }
 
         const episode = await db.get(`SELECT v.name, se.season, se.episode, se.image_url AS imageURL, se.overview FROM shows_episodes se JOIN shows s ON s.id = se.show_id JOIN videos v ON v.id = s.video_id WHERE v.name = ?${year ? ' AND v.year = ?' : ''} AND se.season = ? AND se.episode = ?`, params);
-        return {error: false, data: episode};
+        return { error: false, data: episode };
     } catch (e) {
         console.error(e);
-        return {error: true};
+        return { error: true };
     }
 };

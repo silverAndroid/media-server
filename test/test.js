@@ -1,3 +1,4 @@
+/* eslint-disable no-useless-escape */
 /**
  * Created by silver_android on 5/21/2017.
  */
@@ -8,6 +9,8 @@ const mocha = require('mocha');
 
 const server = require('../bin/www');
 const directoriesModel = require('../models/directories_model');
+const db = require('../models/db');
+const sqlite = require('sqlite');
 
 const before = mocha.before;
 const it = mocha.it;
@@ -15,15 +18,12 @@ const beforeEach = mocha.beforeEach;
 const describe = mocha.describe;
 
 chai.use(require('chai-http'));
+
 chai.should();
 
 before(async () => {
-    const db = require('../models/db');
-    const fileListen = require('../file_listen');
-
     await db.init();
     await directoriesModel.add(process.env.TEST_VIDEO_FOLDER || './test');
-    await fileListen.init();
     await new Promise(resolve => setTimeout(resolve, 7000));
 });
 
@@ -32,7 +32,7 @@ describe('Movies', () => {
         await emptyDatabase();
     });
 
-    it('GET /movies | Get all movies', done => {
+    it('GET /movies | Get all movies', (done) => {
         chai.request(server)
             .get('/api/movies')
             .end((err, res) => {
@@ -51,7 +51,7 @@ describe('Movies', () => {
             });
     });
 
-    it('GET /movies/:id | Get movie by id', done => {
+    it('GET /movies/:id | Get movie by id', (done) => {
         chai.request(server)
             .get('/api/movies/1')
             .end((err, res) => {
@@ -69,7 +69,7 @@ describe('Movies', () => {
             });
     });
 
-    it('GET /movies/:id | Fail to retrieve movie that does not exist', done => {
+    it('GET /movies/:id | Fail to retrieve movie that does not exist', (done) => {
         chai.request(server)
             .get('/api/movies/2')
             .end((err, res) => {
@@ -87,7 +87,7 @@ describe('Shows', () => {
         await emptyDatabase();
     });
 
-    it('GET /shows | Get all shows', done => {
+    it('GET /shows | Get all shows', (done) => {
         chai.request(server)
             .get('/api/shows')
             .end((err, res) => {
@@ -107,7 +107,7 @@ describe('Shows', () => {
             });
     });
 
-    it('GET /shows/:id | Get all seasons of show', done => {
+    it('GET /shows/:id | Get all seasons of show', (done) => {
         chai.request(server)
             .get('/api/shows/2')
             .end((err, res) => {
@@ -139,7 +139,7 @@ describe('Shows', () => {
             });
     });
 
-    it('GET /shows/:id | Fail to retrieve seasons of a show that does not exist', done => {
+    it('GET /shows/:id | Fail to retrieve seasons of a show that does not exist', (done) => {
         chai.request(server)
             .get('/api/shows/5')
             .end((err, res) => {
@@ -155,10 +155,10 @@ describe('Shows', () => {
                 res.body.seasons.data.should.be.a('array');
                 res.body.seasons.data.length.should.be.eql(0);
                 done();
-            })
+            });
     });
 
-    it('GET /shows/:id/:season | Get all episodes of a season', done => {
+    it('GET /shows/:id/:season | Get all episodes of a season', (done) => {
         chai.request(server)
             .get('/api/shows/2/3')
             .end((err, res) => {
@@ -185,12 +185,12 @@ describe('Shows', () => {
                 res.body.season.data.should.have.property('season');
                 res.body.season.data.should.have.property('season').eql(3);
                 res.body.season.data.should.have.property('overview');
-                res.body.season.data.should.have.property('overview').eql('');                
+                res.body.season.data.should.have.property('overview').eql('');
                 done();
             });
     });
 
-    it('GET /shows/:id/:season | Fail to retrieve episodes for a season that does not exist', done => {
+    it('GET /shows/:id/:season | Fail to retrieve episodes for a season that does not exist', (done) => {
         chai.request(server)
             .get('/api/shows/2/4')
             .end((err, res) => {
@@ -208,7 +208,7 @@ describe('Shows', () => {
             });
     });
 
-    it('GET /shows/:id/:season/:episode | Get episode of a TV show', done => {
+    it('GET /shows/:id/:season/:episode | Get episode of a TV show', (done) => {
         chai.request(server)
             .get('/api/shows/2/3/21')
             .end((err, res) => {
@@ -228,7 +228,7 @@ describe('Shows', () => {
             });
     });
 
-    it('GET /shows/:id/:season/:episode | Get episode of a TV show that does not exist', done => {
+    it('GET /shows/:id/:season/:episode | Get episode of a TV show that does not exist', (done) => {
         chai.request(server)
             .get('/api/shows/2/3/22')
             .end((err, res) => {
@@ -242,9 +242,8 @@ describe('Shows', () => {
 });
 
 const emptyDatabase = async () => {
-    const db = require('sqlite');
     try {
-        await db.run('DELETE FROM users;');
+        await sqlite.run('DELETE FROM users;');
     } catch (e) {
         console.error(e);
     }
