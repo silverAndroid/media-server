@@ -3,135 +3,153 @@
  */
 const childProcess = require('child_process');
 const fs = require('fs');
-const getDuration = require('get-video-duration');
 const promiseLimit = require('promise-limit');
+
 const limit = promiseLimit(Number(process.env.MAX_FFMPEG_PROCESSES));
+
+const util = require('./util');
 
 const chunkSize = Number(process.env.CHUNK_SIZE);
 
 module.exports.process = async (path) => {
     const files = await limit(() => splitFiles(path));
     await convert(files);
-    return concatenate(path);
 };
 
-const splitFiles = (path) => {
-    return new Promise((resolve, reject) => {
-        // video duration in seconds
-        getDuration(path).then(duration => {
-            const pathNoExt = path.split(/\.[^/.]+$/)[0];
-            const extension = path.split('.').pop();
-            const fileName = `${pathNoExt}_%04d.${extension}`;
-            const command = process.env.FFMPEG_PATH;
-            const args = ['-i', path, '-c', 'copy', '-map', 0, '-segment_time', chunkSize, '-f', 'segment', fileName];
-            const concatFile = `${path}.txt`;
-            const numFiles = Math.ceil(duration / chunkSize);
-            const files = Array(numFiles)
-                .fill()
-                .map((_, i) => `file '${pathNoExt}_${String(i).padStart(4, '0')}.mp4'`);
+module.exports.checkIfVideoEncoded = path => new Promise(async (resolve, reject) => {
+    // ASSUMPTION: Duration gives the amount of files returned
+    let counter = 0;
+    const numFiles = Math.ceil(await getDuration(path) / chunkSize);
+    const parentFolder = util.getParentFolder(path);
+    const fileNameNoExt = util.removeFileExtension(util.getFileName(path));
 
-            console.log(`Spawning ${command} ${args.join(' ')}`);
-            const child = childProcess.spawn(command, args);
-            child.on('exit', (code, signal) => {
-                if (!signal) {
-                    if (code === 0) {
-                        console.log(`Successfully chunked ${path} to ${fileName}`);
-                        resolve(files.map(file => file.replace('.mp4', `.${extension}`)));
-                    } else {
-                        reject(`Exit code ${code} sent!`);
+    fs.readdir(parentFolder, async (err, files) => {
+        if (!err) {
+            for (let i = 0; i < files.length; i++) {
+                const file = files[i];
+                if (util.isChunkedVideo(file)) {
+                    const fileNoExt = util.removeFileExtension(util.getFileName(file));
+                    if (fileNoExt.indexOf(fileNameNoExt) > -1) {
+                        if (util.getFileExtension(file) === 'mp4') {
+                            counter += 1;
+                            if (counter === numFiles) {
+                                resolve(true);
+                                break;
+                            }
+                        }
                     }
-                } else {
-                    reject(`Process signal ${signal} sent!`);
                 }
-            });
-            fs.writeFile(concatFile, files.join('\n'), err => {
-                if (err)
-                    reject(err);
-            });
-        });
+            }
+            resolve(false);
+        }
+        reject(err);
     });
-};
+});
 
-const convert = (paths) => {
-    return new Promise((resolve, reject) => {
-        const tasks = paths.map(path => {
-            path = path.match(/file '(.+)'/)[1];
-            return limit(() => encode(path))
-        });
-        Promise.all(tasks).then(resolve).catch(reject);
-    });
-};
-
-const encode = (path) => {
-    return new Promise((resolve, reject) => {
-        const pathNoExt = path.split(/\.[^/.]+$/)[0];
-        const fileName = path.split('\\').pop();
+const splitFiles = path => new Promise((resolve, reject) => {
+    // video duration in seconds
+    getDuration(path).then((duration) => {
+        const pathNoExt = util.removeFileExtension(path);
+        const extension = util.getFileExtension(path);
+        const fileName = `${pathNoExt}_%04d.${extension}`;
         const command = process.env.FFMPEG_PATH;
-        const args = ['-i', path, '-f', 'mp4', '-vcodec', 'libx264', '-preset', 'fast', '-speed', 8, '-profile:v', 'main', '-acodec', 'aac', `${pathNoExt}.mp4`, '-hide_banner'];
-        console.log(`Encoding ${path} to ${pathNoExt}.mp4`);
+        const args = ['-i', path, '-c', 'copy', '-map', 0, '-segment_time', chunkSize, '-f', 'segment', fileName];
+        const numFiles = Math.ceil(duration / chunkSize);
+        const files = Array(numFiles)
+            .fill()
+            .map((_, i) => `${pathNoExt}_${String(i).padStart(4, '0')}.${extension}`);
+
         console.log(`Spawning ${command} ${args.join(' ')}`);
         const child = childProcess.spawn(command, args);
-        let message = '';
-
-        child.stdin.setEncoding('utf-8');
-        child.stdout.setEncoding('utf-8');
         child.stderr.setEncoding('utf-8');
-        child.stdout.on('data', (data) => {
-            console.log(`stdout: ${data}`);
-        });
-        child.stderr.on('data', (data) => {
-            message += data;
-            if (message.indexOf('Overwrite ?') > -1) {
-                child.stdin.write('y\n');
-                child.stdin.end();
-                message = '';
-            }
-            // console.error(data);
-        });
+        child.stderr.on('data', data => console.error(data));
         child.on('exit', (code, signal) => {
             if (!signal) {
                 if (code === 0) {
-                    resolve();
-                    console.log(`Successfully encoded ${fileName}`);
-                    fs.unlink(path, err => {
-                        if (err) {
-                            console.error(err);
-                        }
-                    })
+                    console.log(`Successfully chunked ${path}`);
+                    resolve(files);
                 } else {
-                    fs.unlink(`${pathNoExt}.mp4`, err => console.error(err));
                     reject(`Exit code ${code} sent!`);
                 }
+            } else {
+                reject(`Process signal ${signal} sent!`);
+            }
+        });
+    });
+});
+
+const convert = paths => new Promise((resolve, reject) => {
+    const tasks = paths.map(path => limit(() => encode(path)));
+    Promise.all(tasks).then(resolve).catch(reject);
+});
+
+const encode = path => new Promise((resolve, reject) => {
+    const pathNoExt = util.removeFileExtension(path);
+    const fileName = util.getFileExtension(path);
+    const command = process.env.FFMPEG_PATH;
+    const args = ['-i', path, '-f', 'mp4', '-vcodec', 'libx264', '-preset', 'fast', '-speed', 8, '-profile:v', 'main', '-acodec', 'aac', `${pathNoExt}.mp4`, '-hide_banner'];
+    console.log(`Encoding ${path} to ${pathNoExt}.mp4`);
+    console.log(`Spawning ${command} ${args.join(' ')}`);
+    const child = childProcess.spawn(command, args);
+    let message = '';
+
+    child.stdin.setEncoding('utf-8');
+    child.stdout.setEncoding('utf-8');
+    child.stderr.setEncoding('utf-8');
+    child.stdout.on('data', (data) => {
+        console.log(`stdout: ${data}`);
+    });
+    child.stderr.on('data', (data) => {
+        message += data;
+        if (message.indexOf('Overwrite ?') > -1) {
+            child.stdin.write('y\n');
+            child.stdin.end();
+            message = '';
+        }
+        // console.error(data);
+    });
+    child.on('exit', (code, signal) => {
+        if (!signal) {
+            if (code === 0) {
+                resolve();
+                console.log(`Successfully encoded ${fileName}`);
+                fs.unlink(path, (err) => {
+                    if (err) {
+                        console.error(err);
+                    }
+                });
             } else {
                 fs.unlink(`${pathNoExt}.mp4`, err => console.error(err));
-                reject(`Process signal ${signal} sent!`);
+                reject(`Exit code ${code} sent!`);
             }
-        });
+        } else {
+            fs.unlink(`${pathNoExt}.mp4`, err => console.error(err));
+            reject(`Process signal ${signal} sent!`);
+        }
     });
-};
+});
 
-const concatenate = (path) => {
-    return new Promise((resolve, reject) => {
-        const pathNoExt = path.split(/\.[^/.]+$/)[0];
-        const fileName = `${pathNoExt}.mp4`;
-        const command = process.env.FFMPEG_PATH;
-        const args = ['-f', 'concat', '-safe', 0, '-i', `${path}.txt`, '-c', 'copy', fileName];
+const getDuration = path => new Promise((resolve, reject) => {
+    const command = process.env.FFPROBE_PATH;
+    const args = ['-v', 'error', '-show_entries', 'format=duration', '-of', 'default=noprint_wrappers=1:nokey=1', path];
+    let duration = '';
 
-        console.log(`Merging the chunks to ${fileName}`);
-        console.log(`Spawning ${command} ${args.join(' ')}`);
+    console.log(`Getting duration of ${path}`);
+    console.log(`Spawning ${command} ${args.join(' ')}`);
 
-        const child = childProcess.spawn(command, args);
-        child.on('exit', (code, signal) => {
-            if (!signal) {
-                if (code === 0) {
-                    resolve();
-                    console.log(`Successfully merged ${fileName}`);
-                } else {
-                    reject(`Exit code ${code} sent!`);
-                }
+    const child = childProcess.spawn(command, args);
+    child.stdout.on('data', (data) => {
+        duration += data;
+    });
+    child.on('exit', (code, signal) => {
+        if (!signal) {
+            if (code === 0) {
+                resolve(Number(duration));
             } else {
-                reject(`Process signal ${signal} sent!`);
+                reject(`Exit code ${code} sent!`);
             }
-        });
+        } else {
+            reject(`Process signal ${signal} sent!`);
+        }
     });
-};
+});
