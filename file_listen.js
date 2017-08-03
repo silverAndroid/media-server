@@ -143,7 +143,7 @@ async function getSeasonEpisode(show, season, episode, seasonNumber, episodeNumb
         };
     }
 
-    return { seasonData, episodeData };
+    return { season: seasonData, episode: episodeData };
 }
 
 async function addMovie(name, path, year) {
