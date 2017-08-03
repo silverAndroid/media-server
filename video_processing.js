@@ -85,7 +85,7 @@ const convert = paths => new Promise((resolve, reject) => {
 
 const encode = path => new Promise((resolve, reject) => {
     const pathNoExt = util.removeFileExtension(path);
-    const fileName = util.getFileExtension(path);
+    const fileName = util.getFileName(path);
     const command = process.env.FFMPEG_PATH;
     const args = ['-i', path, '-f', 'mp4', '-vcodec', 'libx264', '-preset', 'fast', '-speed', 8, '-profile:v', 'main', '-acodec', 'aac', `${pathNoExt}.mp4`, '-hide_banner'];
     console.log(`Encoding ${path} to ${pathNoExt}.mp4`);
