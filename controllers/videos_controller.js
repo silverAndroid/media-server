@@ -7,29 +7,31 @@ const fs = require('fs');
 const moviesModel = require('../models/movies_model');
 const showsModel = require('../models/shows_model');
 
-module.exports.getMovie = async (req, res) => {
-    const movie = await moviesModel.get(req.params.id);
+module.exports.getMovie = async ({ params: { id }, headers: { range } }, res) => {
+    const movie = await moviesModel.get(id);
     const path = movie.data.path;
 
-    getVideo(req, res, path);
+    getVideo(range, res, path);
 };
 
-module.exports.getEpisode = async (req, res) => {
-    const episode = await showsModel.getEpisode(
-        req.params.id,
-        req.params.season,
-        req.params.episode,
-    );
-    const path = episode.data.path;
+module.exports.getEpisode = async ({ params: { id, season, episode }, headers: { range } }, res) => {
+    const episodeObj = await showsModel.getEpisode(id, season, episode);
+    const path = episodeObj.data.path;
 
-    getVideo(req, res, path);
+    getVideo(range, res, path);
 };
 
-const getVideo = (req, res, path) => {
+module.exports.getEpisodeChunk = async ({ params: { id, season, episode, part }, headers: { range } }, res) => {
+    const episodeObj = await showsModel.getEpisode(id, season, episode, part);
+    const path = episodeObj.data.path;
+
+    getVideo(range, res, path);
+};
+
+const getVideo = (range, res, path) => {
     try {
         const total = fs.statSync(path).size;
-        if (req.headers.range) {
-            const range = req.headers.range;
+        if (range) {
             const parts = range.replace(/bytes=/, '').split('-');
             const partialStart = parts[0];
             const partialEnd = parts[1];

@@ -72,9 +72,13 @@ module.exports.getEpisodes = async (showID, seasonNumber) => {
     }
 };
 
-module.exports.getEpisode = async (showID, seasonNumber, episodeNumber) => {
+module.exports.getEpisode = async (showID, seasonNumber, episodeNumber, part = null) => {
     try {
-        const episode = await db.get('SELECT se.name, se.image_url, se.overview, vl.path FROM shows_episodes se JOIN shows s ON se.show_id = s.id JOIN videos v ON v.id = s.video_id JOIN video_locations vl ON vl.video_id = v.id WHERE v.id = ? AND se.season = ? AND se.episode = ?;', [showID, seasonNumber, episodeNumber]);
+        const params = [showID, seasonNumber, episodeNumber];
+        if (part) {
+            params.push(seasonNumber, episodeNumber);
+        }
+        const episode = await db.get(`SELECT se.name, se.image_url, se.overview, vl.path FROM shows_episodes se JOIN shows s ON se.show_id = s.id JOIN videos v ON v.id = s.video_id JOIN video_locations vl ON vl.video_id = v.id WHERE v.id = ? AND se.season = ? AND se.episode = ? ${part ? 'AND vl.season = ? AND vl.episode = ? ' : ' '}ORDER BY vl.path${part ? ` LIMIT 1 OFFSET ${part}` : ''};`, params);
         return { error: false, data: episode };
     } catch (e) {
         console.error(e);
@@ -86,7 +90,7 @@ module.exports.add = async ({ name, tmdbID, imageURL, overview, season, episode 
     let error = false;
 
     error = await videosModel.add(name, tmdbID, imageURL, overview, year).error || error;
-    error = await videoLocationsModel.add(name, path, year).error || error;
+    error = await videoLocationsModel.add(name, path, season.season, episode.episode, year).error || error;
 
     try {
         await db.run('INSERT INTO shows (video_id) VALUES ((SELECT id FROM videos WHERE name = ?))', [name]);
