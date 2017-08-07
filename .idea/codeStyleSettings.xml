@@ -4,6 +4,11 @@
     <option name="PER_PROJECT_SETTINGS">
       <value>
         <option name="RIGHT_MARGIN" value="150" />
+        <TypeScriptCodeStyleSettings>
+          <option name="FORCE_SEMICOLON_STYLE" value="true" />
+          <option name="USE_DOUBLE_QUOTES" value="false" />
+          <option name="FORCE_QUOTE_STYlE" value="true" />
+        </TypeScriptCodeStyleSettings>
         <codeStyleSettings language="JSON">
           <option name="SPACE_WITHIN_BRACES" value="true" />
           <indentOptions>
@@ -13,6 +18,9 @@
         <codeStyleSettings language="JavaScript">
           <option name="RIGHT_MARGIN" value="150" />
           <option name="WRAP_ON_TYPING" value="1" />
+        </codeStyleSettings>
+        <codeStyleSettings language="TypeScript">
+          <option name="RIGHT_MARGIN" value="140" />
         </codeStyleSettings>
       </value>
     </option>
