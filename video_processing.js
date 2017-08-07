@@ -13,7 +13,7 @@ const chunkSize = Number(process.env.CHUNK_SIZE);
 
 module.exports.process = async (path) => {
     const files = await limit(() => splitFiles(path));
-    await convert(files);
+    await module.exports.convert(files);
 };
 
 module.exports.checkIfVideoEncoded = path => new Promise(async (resolve, reject) => {
@@ -22,6 +22,7 @@ module.exports.checkIfVideoEncoded = path => new Promise(async (resolve, reject)
     const numFiles = Math.ceil(await getDuration(path) / chunkSize);
     const parentFolder = util.getParentFolder(path);
     const fileNameNoExt = util.removeFileExtension(util.getFileName(path));
+    const unencodedFiles = [];
 
     fs.readdir(parentFolder, async (err, files) => {
         if (!err) {
@@ -30,20 +31,28 @@ module.exports.checkIfVideoEncoded = path => new Promise(async (resolve, reject)
                 if (util.isChunkedVideo(file)) {
                     const fileNoExt = util.removeFileExtension(util.getFileName(file));
                     if (fileNoExt.indexOf(fileNameNoExt) > -1) {
-                        if (util.getFileExtension(file) === 'mp4') {
+                        const fileExtension = util.getFileExtension(file);
+                        if (fileExtension === 'mp4') {
                             counter += 1;
                             if (counter === numFiles) {
-                                resolve(true);
+                                resolve({ encoded: true });
                                 break;
                             }
+                        } else {
+                            unencodedFiles.push(`${parentFolder}\\${file}`);
                         }
                     }
                 }
             }
-            resolve(false);
+            resolve({ encoded: false, files: unencodedFiles });
         }
         reject(err);
     });
+});
+
+module.exports.convert = paths => new Promise((resolve, reject) => {
+    const tasks = paths.map(path => limit(() => encode(path)));
+    Promise.all(tasks).then(resolve).catch(reject);
 });
 
 const splitFiles = path => new Promise((resolve, reject) => {
@@ -55,6 +64,7 @@ const splitFiles = path => new Promise((resolve, reject) => {
         const command = process.env.FFMPEG_PATH;
         const args = ['-i', path, '-c', 'copy', '-map', 0, '-segment_time', chunkSize, '-f', 'segment', fileName];
         const numFiles = Math.ceil(duration / chunkSize);
+        // noinspection JSPotentiallyInvalidConstructorUsage
         const files = Array(numFiles)
             .fill()
             .map((_, i) => `${pathNoExt}_${String(i).padStart(4, '0')}.${extension}`);
@@ -76,11 +86,6 @@ const splitFiles = path => new Promise((resolve, reject) => {
             }
         });
     });
-});
-
-const convert = paths => new Promise((resolve, reject) => {
-    const tasks = paths.map(path => limit(() => encode(path)));
-    Promise.all(tasks).then(resolve).catch(reject);
 });
 
 const encode = path => new Promise((resolve, reject) => {

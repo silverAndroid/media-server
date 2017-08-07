@@ -26,9 +26,14 @@ db.init().then(() => {
             if (fileName.endsWith('.mkv') || fileName.endsWith('.avi')) {
                 if (!util.isChunkedVideo(path)) {
                     const isEncoded = await videoProcessor.checkIfVideoEncoded(path);
-                    console.log(`${util.getFileName(path)} is ${isEncoded ? '' : 'not '}encoded`);
-                    if (!isEncoded) {
-                        await videoProcessor.process(path);
+                    console.log(`${util.getFileName(path)} is ${isEncoded.encoded ? '' : 'not '}encoded`);
+                    if (!isEncoded.encoded) {
+                        console.log('Unencoded: ', isEncoded.files);
+                        if (isEncoded.files.length === 0) {
+                            await videoProcessor.process(path);
+                        } else {
+                            await videoProcessor.convert(isEncoded.files);
+                        }
                     }
                 }
             } else if (fileName.endsWith('.mp4')) {
