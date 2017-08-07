@@ -2,8 +2,20 @@
 <project version="4">
   <component name="ProjectCodeStyleSettingsManager">
     <option name="PER_PROJECT_SETTINGS">
-      <value />
+      <value>
+        <option name="RIGHT_MARGIN" value="150" />
+        <codeStyleSettings language="JSON">
+          <option name="SPACE_WITHIN_BRACES" value="true" />
+          <indentOptions>
+            <option name="KEEP_INDENTS_ON_EMPTY_LINES" value="true" />
+          </indentOptions>
+        </codeStyleSettings>
+        <codeStyleSettings language="JavaScript">
+          <option name="RIGHT_MARGIN" value="150" />
+          <option name="WRAP_ON_TYPING" value="1" />
+        </codeStyleSettings>
+      </value>
     </option>
-    <option name="PREFERRED_PROJECT_CODE_STYLE" value="Default" />
+    <option name="USE_PER_PROJECT_SETTINGS" value="true" />
   </component>
 </project>
