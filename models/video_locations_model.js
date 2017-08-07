@@ -3,14 +3,14 @@
  */
 const db = require('sqlite');
 
-module.exports.add = async (name, path, year) => {
+module.exports.add = async (name, path, season, episode, year) => {
     try {
-        const params = [name, path];
+        const params = [name, path, season, episode];
         if (year) {
             params.splice(1, 0, year);
         }
 
-        await db.run(`INSERT INTO video_locations (video_id, path) VALUES ((SELECT id FROM videos WHERE name = ?${year === undefined ? '' : ' AND year = ?'}), ?)`, params);
+        await db.run(`INSERT INTO video_locations (video_id, path, season, episode) VALUES ((SELECT id FROM videos WHERE name = ?${year === undefined ? '' : ' AND year = ?'}), ?, ?, ?)`, params);
         return { error: false };
     } catch (e) {
         if (e.message.indexOf('UNIQUE constraint failed') > -1) {

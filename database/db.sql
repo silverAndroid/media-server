@@ -13,6 +13,8 @@ DROP TABLE IF EXISTS video_locations;
 CREATE TABLE video_locations (
   id       INTEGER PRIMARY KEY AUTOINCREMENT,
   video_id INTEGER NOT NULL,
+  season   INTEGER NOT NULL,
+  episode  INTEGER NOT NULL,
   path     TEXT    NOT NULL UNIQUE,
   FOREIGN KEY (video_id) REFERENCES videos (id)
     ON DELETE CASCADE
