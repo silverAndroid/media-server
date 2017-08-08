@@ -23,8 +23,13 @@ module.exports.checkIfVideoEncoded = path => new Promise(async (resolve, reject)
     const unencodedFiles = [];
 
     fs.readFile(`${util.removeFileExtension(path)}.txt`, 'utf8', (err, data) => {
-        if (err) reject(err);
-        else {
+        if (err) {
+            if (err.code === 'ENOENT') {
+                resolve({ encoded: false, files: [] });
+            } else {
+                reject(err);
+            }
+        } else {
             const numFiles = data.split('\n').length;
             fs.readdir(parentFolder, async (error, files) => {
                 if (!error) {
