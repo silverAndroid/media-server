@@ -8,6 +8,7 @@ const tnp = require('torrent-name-parser');
 const db = require('./models/db');
 const directoriesModel = require('./models/directories_model');
 const moviesModel = require('./models/movies_model');
+const mpdGenerator = require('./mpd_generator');
 const showsModel = require('./models/shows_model');
 const showSeasonsModel = require('./models/shows_seasons_model');
 const showEpisodesModel = require('./models/shows_episodes_model');
@@ -25,14 +26,14 @@ db.init().then(() => {
             // Checks if file is not a chunked video
             if (fileName.endsWith('.mkv') || fileName.endsWith('.avi')) {
                 if (!util.isChunkedVideo(path)) {
-                    const isEncoded = await videoProcessor.checkIfVideoEncoded(path);
-                    console.log(`${util.getFileName(path)} is ${isEncoded.encoded ? '' : 'not '}encoded`);
-                    if (!isEncoded.encoded) {
-                        console.log('Unencoded: ', isEncoded.files);
-                        if (isEncoded.files.length === 0) {
+                    const { encoded, files } = await videoProcessor.checkIfVideoEncoded(path);
+                    console.log(`${util.getFileName(path)} is ${encoded ? '' : 'not '}encoded`);
+                    if (!encoded || files.length > 0) {
+                        console.log('Unencoded: ', files);
+                        if (files.length === 0) {
                             await videoProcessor.process(path);
                         } else {
-                            await videoProcessor.convert(isEncoded.files);
+                            await videoProcessor.convert(files);
                         }
                     }
                 }
@@ -44,13 +45,17 @@ db.init().then(() => {
 });
 
 async function parseFile(fileName, path) {
-    const file = tnp(fileName);
-    const isEpisode = file.season !== undefined && file.episode !== undefined;
+    const { title, season, episode, year } = tnp(fileName);
+    const isEpisode = season !== undefined && episode !== undefined;
 
     if (isEpisode) {
-        await addShow(file.title, path, file.season, file.episode, file.year);
+        const { error, videoID } = await addShow(title, path, season, episode, year);
+        if (!error) {
+            console.log(`TV Show - ${title} S${season}E${episode} added`);
+            await mpdGenerator.addChunk(path, videoID, season, episode);
+        }
     } else {
-        await addMovie(file.title, path, file.year);
+        await addMovie(title, path, year);
     }
 }
 
@@ -58,11 +63,9 @@ async function addShow(name, path, season, episode, year) {
     const show = await getShow(name, season, episode, year);
     if (!show.error) {
         console.log(`Inserting TV Show ${show.name} S${season}E${episode}`);
-        const isError = await showsModel.add(show, path, year);
-        if (!isError.error) {
-            console.log(`TV Show - ${name} S${season}E${episode} added`);
-        }
+        return showsModel.add(show, path, year);
     }
+    return { error: true };
 }
 
 async function getShow(name, seasonNumber, episodeNumber, year) {

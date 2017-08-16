@@ -42,13 +42,14 @@ CREATE TABLE shows_seasons (
 
 DROP TABLE IF EXISTS shows_episodes;
 CREATE TABLE shows_episodes (
-  id        INTEGER PRIMARY KEY AUTOINCREMENT,
-  show_id   INTEGER NOT NULL,
-  season    INTEGER NOT NULL,
-  episode   INTEGER NOT NULL,
-  name      TEXT    NOT NULL,
-  image_url TEXT    NOT NULL,
-  overview  TEXT,
+  id           INTEGER PRIMARY KEY AUTOINCREMENT,
+  show_id      INTEGER NOT NULL,
+  season       INTEGER NOT NULL,
+  episode      INTEGER NOT NULL,
+  name         TEXT    NOT NULL,
+  image_url    TEXT    NOT NULL,
+  overview     TEXT,
+  mpd_location TEXT,
   FOREIGN KEY (show_id) REFERENCES shows (id),
   FOREIGN KEY (season) REFERENCES shows_seasons
     ON DELETE CASCADE,
