@@ -22,7 +22,6 @@ module.exports.checkIfVideoEncoded = path => new Promise(async (resolve, reject)
     let counter = 0;
     const parentFolder = util.getParentFolder(path);
     const fileNameNoExt = util.removeFileExtension(util.getFileName(path));
-    const unencodedFiles = [];
 
     fs.readFile(`${util.removeFileExtension(path)}.txt`, 'utf8', (err, data) => {
         if (err) {
@@ -35,25 +34,22 @@ module.exports.checkIfVideoEncoded = path => new Promise(async (resolve, reject)
             const numFiles = data.split('\n').length;
             fs.readdir(parentFolder, async (error, files) => {
                 if (!error) {
-                    let encoded = false;
-                    for (let i = 0; i < files.length; i++) {
-                        const file = files[i];
-                        if (util.isChunkedVideo(file)) {
-                            const fileNoExt = util.removeFileExtension(util.getFileName(file));
-                            if (fileNoExt.indexOf(fileNameNoExt) > -1) {
-                                const fileExtension = util.getFileExtension(file);
-                                if (fileExtension === 'mp4') {
-                                    counter += 1;
-                                    if (counter === numFiles) {
-                                        encoded = true;
-                                        break;
-                                    }
-                                } else {
-                                    unencodedFiles.push(`${parentFolder}\\${file}`);
-                                }
+                    const reducedFiles = files.filter(
+                        file => util.isChunkedVideo(file) && util.removeFileExtension(util.getFileName(file)).indexOf(fileNameNoExt) > -1,
+                    );
+                    // eslint-disable-next-line no-shadow
+                    const { encoded, unencodedFiles } = reducedFiles.reduce(({ encoded, unencodedFiles }, file) => {
+                        const fileExtension = util.getFileExtension(file);
+                        if (fileExtension === 'mp4') {
+                            counter += 1;
+                            if (counter === numFiles) {
+                                return { encoded: true, unencodedFiles };
                             }
+                        } else {
+                            unencodedFiles.push(`${parentFolder}\\${file}`);
                         }
-                    }
+                        return { encoded, unencodedFiles };
+                    }, { encoded: false, unencodedFiles: [] });
                     resolve({ encoded, files: unencodedFiles });
                 } else reject(error);
             });
