@@ -3,6 +3,8 @@
  */
 const db = require('sqlite');
 
+const { logger } = require('../log');
+
 module.exports.add = async (name, path, season, episode, year) => {
     let error = false;
     try {
@@ -15,14 +17,14 @@ module.exports.add = async (name, path, season, episode, year) => {
     } catch (e) {
         if (e.message.indexOf('UNIQUE constraint failed') > -1) {
             if (e.message.indexOf('video_locations.path') > -1) {
-                console.log('Video already exists');
+                logger.verbose(`Video ${path} already exists`);
             } else {
                 error = true;
-                console.error(e);
+                logger.error(e);
             }
         } else {
             error = true;
-            console.error(e);
+            logger.error(e);
         }
     }
     return { error };

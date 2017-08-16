@@ -3,6 +3,7 @@ const fs = require('fs');
 const builder = require('xmlbuilder');
 
 const fileUtil = require('./file_util');
+const { logger } = require('./log');
 const util = require('./util');
 const videoProcessor = require('./video_processing');
 
@@ -31,7 +32,7 @@ function create(path, videoID, season, episode) {
         xmlWriter.newline = '\n';
         xmlWriter.indent = '    ';
 
-        console.log('Creating MPD for', mpdFilePath);
+        logger.verbose('Creating MPD for', mpdFilePath);
 
         const xml = builder.create({
             MPD: {

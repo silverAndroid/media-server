@@ -4,12 +4,14 @@
 
 const db = require('sqlite');
 
+const { logger } = require('../log');
+
 module.exports.getDirectories = async () => {
     let directories;
     try {
         directories = await db.all('SELECT path FROM directories;');
     } catch (e) {
-        console.error(e);
+        logger.error(e);
         return { error: true };
     }
     return directories.map(directory => directory.path);
@@ -21,13 +23,13 @@ module.exports.add = async (directory) => {
     } catch (e) {
         if (e.message.indexOf('UNIQUE constraint failed') > -1) {
             if (e.message.indexOf('directories.path') > -1) {
-                console.log(`${directory} already added`);
+                logger.verbose(`${directory} already added`);
             } else {
-                console.error(e);
+                logger.error(e);
                 return { error: true };
             }
         } else {
-            console.error(e);
+            logger.error(e);
             return { error: true };
         }
     }

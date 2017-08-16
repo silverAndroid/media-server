@@ -3,6 +3,8 @@
  */
 const db = require('sqlite');
 
+const { logger } = require('../log');
+
 module.exports.add = async (name, tmdbID, imageURL, overview, year) => {
     let error = false;
     try {
@@ -10,24 +12,24 @@ module.exports.add = async (name, tmdbID, imageURL, overview, year) => {
     } catch (e) {
         if (e.message.indexOf('UNIQUE constraint failed') > -1) {
             if (e.message.indexOf('videos.name, videos.year') > -1) {
-                console.log(`${name} already exists`);
+                logger.verbose(`${name} already exists`);
             } else if (e.message.indexOf('videos.tmdb_id') > -1) {
-                console.log(`${name} (${tmdbID}) already exists`);
+                logger.verbose(`${name} (${tmdbID}) already exists`);
             } else {
                 error = true;
-                console.error(e);
+                logger.error(e);
             }
         } else if (e.message.indexOf('NOT NULL constraint failed') > -1) {
             if (e.message.indexOf('videos.image_url') > -1) {
                 error = true;
-                console.log(`${name} imageURL null (${imageURL})`);
+                logger.log(`${name} imageURL null (${imageURL})`);
             } else {
                 error = true;
-                console.error(e);
+                logger.error(e);
             }
         } else {
             error = true;
-            console.error(e);
+            logger.error(e);
         }
     }
     const { id } = await db.get('SELECT id FROM videos WHERE tmdb_id = ?;', [tmdbID]);

@@ -7,6 +7,7 @@ const tnp = require('torrent-name-parser');
 
 const db = require('./models/db');
 const directoriesModel = require('./models/directories_model');
+const { logger } = require('./log');
 const moviesModel = require('./models/movies_model');
 const mpdGenerator = require('./mpd_generator');
 const showsModel = require('./models/shows_model');
@@ -17,9 +18,9 @@ const util = require('./util');
 const videoProcessor = require('./video_processing');
 
 db.init().then(() => {
-    console.log('file_listen: init db');
+    logger.verbose('file_listen: init db');
     directoriesModel.getDirectories().then((directories) => {
-        console.log('file_listen: get directories');
+        logger.verbose('file_listen: get directories');
         chokidar.watch(directories).on('add', async (path) => {
             const fileName = util.getFileName(path);
 
@@ -27,9 +28,9 @@ db.init().then(() => {
             if (fileName.endsWith('.mkv') || fileName.endsWith('.avi')) {
                 if (!util.isChunkedVideo(path)) {
                     const { encoded, files } = await videoProcessor.checkIfVideoEncoded(path);
-                    console.log(`${util.getFileName(path)} is ${encoded ? '' : 'not '}encoded`);
+                    logger.info(`${util.getFileName(path)} is ${encoded ? '' : 'not '}encoded`);
                     if (!encoded || files.length > 0) {
-                        console.log('Unencoded: ', files);
+                        logger.debug(`Unencoded: ${files}`);
                         if (files.length === 0) {
                             await videoProcessor.process(path);
                         } else {
@@ -51,7 +52,7 @@ async function parseFile(fileName, path) {
     if (isEpisode) {
         const { error, videoID } = await addShow(title, path, season, episode, year);
         if (!error) {
-            console.log(`TV Show - ${title} S${season}E${episode} added`);
+            logger.info(`TV Show - ${title} S${season}E${episode} added`);
             await mpdGenerator.addChunk(path, videoID, season, episode);
         }
     } else {
@@ -62,14 +63,14 @@ async function parseFile(fileName, path) {
 async function addShow(name, path, season, episode, year) {
     const show = await getShow(name, season, episode, year);
     if (!show.error) {
-        console.log(`Inserting TV Show ${show.name} S${season}E${episode}`);
+        logger.verbose(`Inserting TV Show ${show.name} S${season}E${episode}`);
         return showsModel.add(show, path, year);
     }
     return { error: true };
 }
 
 async function getShow(name, seasonNumber, episodeNumber, year) {
-    console.log(`Checking if TV Show ${name} already exists`);
+    logger.verbose(`Checking if TV Show ${name} already exists`);
     let [show, season, episode] = await Promise.all([
         showsModel.getShow({ name, year }),
         showSeasonsModel.get(name, seasonNumber, year),
@@ -90,7 +91,7 @@ async function getShow(name, seasonNumber, episodeNumber, year) {
 async function parseShow(show, name, seasonNumber, episodeNumber, year) {
     let showObj = show;
     if (!showObj.data) {
-        console.log(`Retrieving TMDB data for ${name} S${seasonNumber}E${episodeNumber}`);
+        logger.debug(`Retrieving TMDB data for ${name} S${seasonNumber}E${episodeNumber}`);
         // image_url: poster_path, tmdb_id: id, overview: overview
         const showRes = await tmdbAPI.getTMDBShow(name, year);
 
@@ -155,8 +156,8 @@ async function getSeasonEpisode(show, season, episode, seasonNumber, episodeNumb
 }
 
 async function addMovie(name, path, year) {
-    console.log(`Inserting movie ${name} (${year})`);
-    console.log(`Retrieving TMDB data for ${name} (${year})`);
+    logger.verbose(`Inserting movie ${name} (${year})`);
+    logger.debug(`Retrieving TMDB data for ${name} (${year})`);
     const movie = await tmdbAPI.getTMDBMovie(name, year);
     if (!movie.error) {
         const movieData = movie.data;
@@ -169,7 +170,7 @@ async function addMovie(name, path, year) {
             year,
         );
         if (!isError.error) {
-            console.log(`Movie - ${name} (${year}) added`);
+            logger.info(`Movie - ${name} (${year}) added`);
         }
     }
 }

@@ -5,6 +5,7 @@ const fs = require('fs');
 const ffmpeg = require('fluent-ffmpeg');
 const promiseLimit = require('promise-limit');
 
+const { logger } = require('./log');
 const util = require('./util');
 
 const chunkSize = Number(process.env.CHUNK_SIZE);
@@ -93,7 +94,10 @@ function splitFiles(path) {
             ])
             .output(fileName)
             .format('segment')
-            .on('start', command => console.log(`Spawning ${command}`))
+            .on('start', (command) => {
+                logger.info(`Segmenting ${path}`);
+                logger.debug(`Spawning ${command}`);
+            })
             .on('stderr', (data) => {
                 message += data;
                 let file;
@@ -107,7 +111,7 @@ function splitFiles(path) {
             })
             .on('error', err => reject(err.message))
             .on('end', () => {
-                console.log(`Successfully chunked ${path}`);
+                logger.info(`Successfully chunked ${path}`);
                 fs.writeFile(`${pathNoExt}.txt`, files.map(file => `${util.removeFileExtension(file)}.mp4`).join('\n'), (err) => {
                     if (err) {
                         reject(err);
@@ -135,16 +139,16 @@ function encode(path) {
             .videoCodec('libx264')
             .format('mp4')
             .on('start', (command) => {
-                console.log(`Encoding ${path} to ${pathNoExt}.mp4`);
-                console.log(`Spawning ${command}`);
+                logger.info(`Encoding ${path} to ${pathNoExt}.mp4`);
+                logger.debug(`Spawning ${command}`);
             })
             .on('error', err => reject(err))
             .on('end', () => {
                 resolve();
-                console.log(`Successfully encoded ${fileName}`);
+                logger.info(`Successfully encoded ${fileName}`);
                 fs.unlink(path, (err) => {
                     if (err) {
-                        console.error(err);
+                        logger.error(err);
                     }
                 });
             })
