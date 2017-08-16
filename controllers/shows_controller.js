@@ -14,7 +14,7 @@ module.exports.getAll = async (req, res) => {
     res.status(statusCode).json(shows);
 };
 
-module.exports.getSeasons = async ({ params: id }, res) => {
+module.exports.getSeasons = async ({ params: { id } }, res) => {
     const [show, seasons] = await Promise.all([
         showsModel.getShow({ showID: id }),
         showsModel.getSeasons(id),
@@ -37,7 +37,7 @@ module.exports.getSeasons = async ({ params: id }, res) => {
     res.status(statusCode).json({ error, show, seasons });
 };
 
-module.exports.getEpisodes = async ({ params: id, season }, res) => {
+module.exports.getEpisodes = async ({ params: { id, season } }, res) => {
     const [seasonData, episodes] = await Promise.all([
         showsModel.getSeason(id, season),
         showsModel.getEpisodes(id, season),
@@ -56,7 +56,7 @@ module.exports.getEpisodes = async ({ params: id, season }, res) => {
     res.status(statusCode).json({ error, season: seasonData, episodes });
 };
 
-module.exports.getEpisode = async ({ params: id, season, episode }, res) => {
+module.exports.getEpisode = async ({ params: { id, season, episode } }, res) => {
     const episodeData = await showsModel.getEpisode(
         id,
         season,
