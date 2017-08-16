@@ -13,8 +13,8 @@ module.exports.getAll = async (req, res) => {
     res.status(statusCode).json(movies);
 };
 
-module.exports.get = async (req, res) => {
-    const movie = await moviesModel.get(req.params.id);
+module.exports.get = async ({ params: id }, res) => {
+    const movie = await moviesModel.get(id);
     if (movie.data) {
         delete movie.data.path;
     }

@@ -14,10 +14,10 @@ module.exports.getAll = async (req, res) => {
     res.status(statusCode).json(shows);
 };
 
-module.exports.getSeasons = async (req, res) => {
+module.exports.getSeasons = async ({ params: id }, res) => {
     const [show, seasons] = await Promise.all([
-        showsModel.getShow({showID: req.params.id}),
-        showsModel.getSeasons(req.params.id),
+        showsModel.getShow({ showID: id }),
+        showsModel.getSeasons(id),
     ]);
 
     let statusCode = 200;
@@ -34,43 +34,43 @@ module.exports.getSeasons = async (req, res) => {
     } else if (!show.data || !seasons.data || seasons.data.length === 0) {
         statusCode = 404;
     }
-    res.status(statusCode).json({error, show, seasons});
+    res.status(statusCode).json({ error, show, seasons });
 };
 
-module.exports.getEpisodes = async (req, res) => {
-    const [season, episodes] = await Promise.all([
-        showsModel.getSeason(req.params.id, req.params.season),
-        showsModel.getEpisodes(req.params.id, req.params.season),
+module.exports.getEpisodes = async ({ params: id, season }, res) => {
+    const [seasonData, episodes] = await Promise.all([
+        showsModel.getSeason(id, season),
+        showsModel.getEpisodes(id, season),
     ]);
 
     let statusCode = 200;
-    const error = season.error || episodes.error;
-    delete season.error;
+    const error = seasonData.error || episodes.error;
+    delete seasonData.error;
     delete episodes.error;
 
     if (error) {
         statusCode = 500;
-    } else if (!season.data || !episodes.data || episodes.data.length === 0) {
+    } else if (!seasonData.data || !episodes.data || episodes.data.length === 0) {
         statusCode = 404;
     }
-    res.status(statusCode).json({error, season, episodes});
+    res.status(statusCode).json({ error, season: seasonData, episodes });
 };
 
-module.exports.getEpisode = async (req, res) => {
-    const episode = await showsModel.getEpisode(
-        req.params.id,
-        req.params.season,
-        req.params.episode,
+module.exports.getEpisode = async ({ params: id, season, episode }, res) => {
+    const episodeData = await showsModel.getEpisode(
+        id,
+        season,
+        episode,
     );
-    if (episode.data) {
-        delete episode.data.path;
+    if (episodeData.data) {
+        delete episodeData.data.path;
     }
 
     let statusCode = 200;
-    if (episode.error) {
+    if (episodeData.error) {
         statusCode = 500;
-    } else if (!episode.data) {
+    } else if (!episodeData.data) {
         statusCode = 404;
     }
-    res.status(statusCode).json(episode);
+    res.status(statusCode).json(episodeData);
 };
