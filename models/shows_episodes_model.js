@@ -4,21 +4,23 @@
 const db = require('sqlite');
 
 module.exports.add = async (name, season, episode, episodeName, imageURL, overview) => {
+    let error = false;
     try {
         await db.run('INSERT INTO shows_episodes (show_id, season, episode, name, image_url, overview) VALUES ((SELECT s.id FROM shows s JOIN videos v ON s.video_id = v.id WHERE v.name = ?), ?, ?, ?, ?, ?)', [name, season, episode, episodeName, imageURL, overview]);
-        return { error: false };
     } catch (e) {
         if (e.message.indexOf('UNIQUE constraint failed') > -1) {
             if (e.message.indexOf('shows_episodes.show_id, shows_episodes.season, shows_episodes.episode') > -1) {
                 console.log(`${name} already exists`);
             } else {
+                error = true;
                 console.error(e);
             }
         } else {
+            error = true;
             console.error(e);
         }
-        return { error: true };
     }
+    return { error };
 };
 
 module.exports.get = async (name, seasonNumber, episodeNumber, year) => {
