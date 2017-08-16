@@ -87,31 +87,41 @@ module.exports.getEpisode = async (showID, seasonNumber, episodeNumber, part = n
 };
 
 module.exports.add = async ({ name, tmdbID, imageURL, overview, season, episode }, path, year) => {
-    let error = false;
+    const errors = [];
 
-    error = await videosModel.add(name, tmdbID, imageURL, overview, year).error || error;
-    error = await videoLocationsModel.add(name, path, season.season, episode.episode, year).error || error;
+    // eslint-disable-next-line prefer-const
+    let { videoID, error } = await videosModel.add(name, tmdbID, imageURL, overview, year);
+    errors.push(error);
+    ({ error } = await videoLocationsModel.add(name, path, season.season, episode.episode, year));
+    errors.push(error);
 
+    error = false;
     try {
-        await db.run('INSERT INTO shows (video_id) VALUES ((SELECT id FROM videos WHERE name = ?))', [name]);
+        await db.run('INSERT INTO shows (video_id) VALUES (?)', [videoID]);
     } catch (e) {
         if (e.message.indexOf('UNIQUE constraint failed') > -1) {
             if (e.message.indexOf('shows.video_id') > -1) {
                 console.log(`${name} is already known as a show`);
             } else {
+                error = true;
                 console.error(e);
             }
         } else if (e.message.indexOf('NOT NULL constraint failed') > -1) {
+            error = true;
             if (e.message.indexOf('shows.video_id') > -1) {
                 console.log(`${path}`);
+            } else {
+                console.error(e);
             }
         } else {
+            error = true;
             console.error(e);
         }
     }
-    error = await showsSeasonsModel.add(name, season.season, season.imageURL, season.overview)
-        .error || error;
-    error = await showsEpisodesModel.add(name, season.season, episode.episode, episode.name,
-        episode.imageURL, episode.overview).error || error;
-    return { error };
+    errors.push(error);
+    ({ error } = await showsSeasonsModel.add(name, season.season, season.imageURL, season.overview));
+    errors.push(error);
+    ({ error } = await showsEpisodesModel.add(name, season.season, episode.episode, episode.name, episode.imageURL, episode.overview));
+    errors.push(error);
+    return { error: errors.some(err => err), videoID };
 };

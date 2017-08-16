@@ -4,6 +4,7 @@
 const db = require('sqlite');
 
 module.exports.add = async (name, tmdbID, imageURL, overview, year) => {
+    let error = false;
     try {
         await db.run('INSERT INTO videos (name, year, tmdb_id, image_url, overview) VALUES (?, ?, ?, ?, ?)', [name, year, tmdbID, imageURL, overview]);
     } catch (e) {
@@ -13,18 +14,22 @@ module.exports.add = async (name, tmdbID, imageURL, overview, year) => {
             } else if (e.message.indexOf('videos.tmdb_id') > -1) {
                 console.log(`${name} (${tmdbID}) already exists`);
             } else {
+                error = true;
                 console.error(e);
             }
         } else if (e.message.indexOf('NOT NULL constraint failed') > -1) {
             if (e.message.indexOf('videos.image_url') > -1) {
+                error = true;
                 console.log(`${name} imageURL null (${imageURL})`);
             } else {
+                error = true;
                 console.error(e);
             }
         } else {
+            error = true;
             console.error(e);
         }
-        return { error: true };
     }
-    return { error: false };
+    const { id } = await db.get('SELECT id FROM videos WHERE tmdb_id = ?;', [tmdbID]);
+    return { error, videoID: id };
 };
