@@ -11,6 +11,6 @@ app.get('/:id', controller.getSeasons);
 app.get('/:id/:season', controller.getEpisodes);
 app.get('/:id/:season/:episode', controller.getEpisode);
 app.get('/:id/:season/:episode/video', videosController.getEpisode);
-app.get('/:id/:season/:episode/:part/video', videosController.getEpisodeChunk);
+app.get('/:id/:season/:episode/video/:part', videosController.getEpisodeChunk);
 
 module.exports = app;
