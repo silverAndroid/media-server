@@ -1,0 +1,39 @@
+version: "3.1"
+
+services:
+  media-server:
+    image: media-server
+    restart: on-failure
+    environment:
+      - SECRETS_FOLDER=/run/secrets
+    ports:
+      - "8080:8080"
+    depends_on:
+      - media-server-db
+    links:
+      - "media-server-db:db"
+    secrets:
+        - db_user.secret
+        - db_password.secret
+        - database.secret
+  media-server-db:
+    image: postgres:latest
+    environment:
+      - POSTGRES_USER_FILE=/run/secrets/db_user.secret
+      - POSTGRES_PASSWORD_FILE=/run/secrets/db_password.secret
+      - POSTGRES_DB_FILE=/run/secrets/database.secret
+    ports:
+        - "5432:5432"
+    secrets:
+        - db_user.secret
+        - db_password.secret
+        - database.secret
+    volumes:
+      - ./src/main/resources/database/db.sql:/docker-entrypoint-initdb.d/db.sql
+secrets:
+  db_user.secret:
+    file: ./src/main/resources/secrets/dev/db_user.secret
+  db_password.secret:
+    file: ./src/main/resources/secrets/dev/db_password.secret
+  database.secret:
+    file: ./src/main/resources/secrets/dev/database.secret
